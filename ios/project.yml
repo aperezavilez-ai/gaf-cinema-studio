@@ -28,7 +28,10 @@ targets:
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_NSCameraUsageDescription: "Import video for your cinematic projects."
-        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Import media into CinemaStudio projects."
+        INFOPLIST_KEY_NSPhotoLibraryUsageDescription: "Import video into your cinematic projects."
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited)
+        # Add CINEMASTUDIO_ENGINE_LINKED when XCFramework is linked:
+        # SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) CINEMASTUDIO_ENGINE_LINKED
         INFOPLIST_KEY_UISupportsDocumentBrowser: YES
         TARGETED_DEVICE_FAMILY: "1,2"
         OTHER_LDFLAGS: ["-framework AVFoundation", "-framework ImageIO"]

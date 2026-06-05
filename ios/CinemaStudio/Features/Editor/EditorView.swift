@@ -38,6 +38,10 @@ struct EditorView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
 
+                MediaImportPicker()
+                    .padding(.horizontal, 16)
+                    .environmentObject(store)
+
                 if !store.exportStatus.isEmpty {
                     Text(store.exportStatus)
                         .font(.caption)

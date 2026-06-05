@@ -1,143 +1,68 @@
 import Foundation
 
-/// Single entry point for Rust engine calls.
-/// Mock mode: local file ops + AVFoundation preview. Native: UniFFI `cs_*` when linked.
+/// Facade — selects mock or native Rust backend via compile flag `CINEMASTUDIO_ENGINE_LINKED`.
 @MainActor
 final class EngineBridge {
     static let shared = EngineBridge()
 
-    var useNativeEngine = false
+    private let backend: EngineBackend
 
-    private init() {}
-
-    func initialize(dataRoot: String? = nil) {
-        guard useNativeEngine else { return }
-        // csEngineInit(dataRoot: dataRoot)
+    var useNativeEngine: Bool {
+        #if CINEMASTUDIO_ENGINE_LINKED
+        true
+        #else
+        false
+        #endif
     }
 
-    // MARK: - Project
+    private init() {
+        #if CINEMASTUDIO_ENGINE_LINKED
+        backend = NativeEngineBackend()
+        #else
+        backend = MockEngineBackend()
+        #endif
+    }
+
+    func initialize(dataRoot: String? = nil) {
+        try? backend.initialize(dataRoot: dataRoot)
+    }
 
     func createProject(name: String, parentDir: String) throws -> String {
-        if useNativeEngine { fatalError("UniFFI bindings not linked") }
-        let safe = name.replacingOccurrences(of: " ", with: "_")
-        let path = (parentDir as NSString).appendingPathComponent("\(safe).csproj")
-        try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
-        try writeMinimalProjectJson(at: path, name: name)
-        return path
+        try backend.createProject(name: name, parentDir: parentDir)
     }
 
     func openProject(projectDir: String) throws -> String {
-        if useNativeEngine { fatalError("UniFFI bindings not linked") }
-        return (projectDir as NSString).lastPathComponent.replacingOccurrences(of: ".csproj", with: "")
+        try backend.openProject(projectDir: projectDir)
     }
 
     func saveProject(at path: String) throws {
-        if useNativeEngine { return }
-        guard FileManager.default.fileExists(atPath: path) else { return }
-        // Mock: touch project.json timestamp
-        let jsonPath = (path as NSString).appendingPathComponent("project.json")
-        if FileManager.default.fileExists(atPath: jsonPath) {
-            try FileManager.default.setAttributes([.modificationDate: Date()], ofItemAtPath: jsonPath)
-        }
+        try backend.saveProject(at: path)
     }
 
-    // MARK: - Media + timeline
-
     func importMedia(sourcePath: String, into projectPath: String) throws -> UUID {
-        if useNativeEngine { fatalError("UniFFI bindings not linked") }
-        let mediaDir = (projectPath as NSString).appendingPathComponent("media")
-        try FileManager.default.createDirectory(atPath: mediaDir, withIntermediateDirectories: true)
-        let fileName = (sourcePath as NSString).lastPathComponent
-        let dest = (mediaDir as NSString).appendingPathComponent(fileName)
-        if sourcePath != dest {
-            if FileManager.default.fileExists(atPath: dest) {
-                try FileManager.default.removeItem(atPath: dest)
-            }
-            try FileManager.default.copyItem(atPath: sourcePath, toPath: dest)
-        }
-        return UUID()
+        try backend.importMedia(sourcePath: sourcePath, into: projectPath)
     }
 
     func scrubTo(timeMs: UInt64) throws -> FrameCompositionDTO {
-        if useNativeEngine { fatalError("UniFFI bindings not linked") }
-        return FrameCompositionDTO(
-            timeMs: timeMs,
-            videoLayerCount: 1,
-            primaryPath: nil,
-            usesProxy: false
-        )
+        try backend.scrubTo(timeMs: timeMs)
     }
 
-    // MARK: - Playback
-
-    func playbackPlay() throws {
-        if useNativeEngine { return }
-    }
-
-    func playbackPause() throws {
-        if useNativeEngine { return }
-    }
-
-    // MARK: - Edit
-
-    func splitAtPlayhead() throws -> Bool { !useNativeEngine }
-    func deleteAtPlayhead() throws -> Bool { !useNativeEngine }
-    func undo() throws -> Bool { !useNativeEngine }
-    func redo() throws -> Bool { !useNativeEngine }
-
-    // MARK: - Export
-
+    func playbackPlay() throws { try backend.playbackPlay() }
+    func playbackPause() throws { try backend.playbackPause() }
+    func splitAtPlayhead() throws -> Bool { try backend.splitAtPlayhead() }
+    func deleteAtPlayhead() throws -> Bool { try backend.deleteAtPlayhead() }
+    func undo() throws -> Bool { try backend.undo() }
+    func redo() throws -> Bool { try backend.redo() }
     func startExport(width: Int = 1920, height: Int = 1080) throws -> UUID {
-        if useNativeEngine { fatalError("UniFFI bindings not linked") }
-        return UUID()
+        try backend.startExport(width: width, height: height)
     }
 
-    // MARK: - AI
-
-    func aiSuggestions() throws -> [AiSuggestionItem] {
-        if useNativeEngine { fatalError("UniFFI bindings not linked") }
-        return [
-            AiSuggestionItem(
-                id: UUID(),
-                message: "Importa clips y colócalos en la timeline para un rough cut automático.",
-                priority: "high",
-                actionLabel: "Ejecutar",
-                isActionable: true
-            )
-        ]
-    }
-
-    func executeSuggestion(id: UUID) throws {}
-    func dismissSuggestion(id: UUID) throws {}
-
-    // MARK: - Device
-
-    func setDeviceHints(json: String) throws {
-        if useNativeEngine { return }
-    }
-
-    func registerNativeDecoder() {
-        if useNativeEngine {
-            // try? csSetDecoderBackend(name: "avfoundation")
-        }
-    }
-
-    func bridgeStatus() -> String {
-        if useNativeEngine {
-            return "{\"mode\":\"native\",\"decodeCallbackRegistered\":false}"
-        }
-        return "{\"mode\":\"mock\",\"avFoundationPreview\":true}"
-    }
-
-    private func writeMinimalProjectJson(at projectPath: String, name: String) throws {
-        let jsonPath = (projectPath as NSString).appendingPathComponent("project.json")
-        let payload: [String: Any] = [
-            "schemaVersion": 1,
-            "metadata": ["name": name, "createdAt": ISO8601DateFormatter().string(from: Date())],
-        ]
-        let data = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted, .sortedKeys])
-        try data.write(to: URL(fileURLWithPath: jsonPath))
-    }
+    func aiSuggestions() throws -> [AiSuggestionItem] { try backend.aiSuggestions() }
+    func executeSuggestion(id: UUID) throws { try backend.executeSuggestion(id: id) }
+    func dismissSuggestion(id: UUID) throws { try backend.dismissSuggestion(id: id) }
+    func setDeviceHints(json: String) throws { try backend.setDeviceHints(json: json) }
+    func registerNativeDecoder() { backend.registerNativeDecoder() }
+    func bridgeStatus() -> String { backend.bridgeStatus() }
 }
 
 struct FrameCompositionDTO: Codable {

@@ -155,6 +155,18 @@ Human approval required: respond with `CONTINUE PHASE` in chat.
 
 ---
 
+## Phase 10 — Mobile Engine Link
+
+### Gate Criteria
+| # | Criterion | Target |
+|---|-----------|--------|
+| 10.1 | C ABI (`cs_c_*`) | Compiles with ffi |
+| 10.2 | iOS EngineBackend mock/native | Switchable |
+| 10.3 | Android EngineBackend mock/native | Switchable |
+| 10.4 | Media import picker | iOS PhotosUI |
+
+---
+
 ## Validation Protocol (every phase)
 
 1. Run automated tests

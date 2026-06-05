@@ -2,50 +2,34 @@
 //! Complex types returned as JSON strings; wire native callbacks at integration.
 
 #[cfg(feature = "ffi")]
+mod engine_state;
+#[cfg(feature = "ffi")]
+pub mod capi;
+#[cfg(feature = "ffi")]
 mod types;
 
 #[cfg(feature = "ffi")]
 use std::path::PathBuf;
-#[cfg(feature = "ffi")]
-use std::sync::Mutex;
 
 #[cfg(feature = "ffi")]
 use uuid::Uuid;
 
 #[cfg(feature = "ffi")]
 use crate::{
-    default_project_settings, parse_hints_json, AddClipParams, ExportSettings, ProjectStateManager,
-    ThermalLevel,
+    default_project_settings, parse_hints_json, AddClipParams, ExportSettings, ThermalLevel,
 };
 
 #[cfg(feature = "ffi")]
+use engine_state::{init_engine, with_manager};
+#[cfg(feature = "ffi")]
 use types::{FfiAiSuggestion, FfiExportStatus, FfiFrameComposition, to_json};
-
-#[cfg(feature = "ffi")]
-static ENGINE: Mutex<Option<ProjectStateManager>> = Mutex::new(None);
-
-#[cfg(feature = "ffi")]
-fn with_manager<F, T>(f: F) -> Result<T, String>
-where
-    F: FnOnce(&mut ProjectStateManager) -> crate::Result<T>,
-{
-    let mut guard = ENGINE.lock().map_err(|e| format!("lock error: {e}"))?;
-    if guard.is_none() {
-        *guard = Some(ProjectStateManager::new());
-    }
-    f(guard.as_mut().unwrap()).map_err(|e| e.to_string())
-}
 
 // ─── Lifecycle ───────────────────────────────────────────────────────────────
 
 #[cfg(feature = "ffi")]
 #[uniffi::export]
 pub fn cs_engine_init(data_root: Option<String>) {
-    let mut guard = ENGINE.lock().unwrap();
-    *guard = Some(match data_root {
-        Some(root) => ProjectStateManager::with_data_root(PathBuf::from(root)),
-        None => ProjectStateManager::new(),
-    });
+    init_engine(data_root);
 }
 
 #[cfg(feature = "ffi")]

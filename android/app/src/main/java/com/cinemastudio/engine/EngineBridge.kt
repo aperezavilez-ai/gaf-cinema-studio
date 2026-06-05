@@ -1,28 +1,23 @@
 package com.cinemastudio.engine
 
 /**
- * Kotlin bridge to Rust engine via UniFFI/JNI.
- * Set [useNativeEngine] = true after generating bindings.
+ * Kotlin facade — native Rust when .so linked, else mock.
  */
 object EngineBridge {
-    var useNativeEngine: Boolean = false
-
-    fun initialize(dataRoot: String? = null) {
-        if (!useNativeEngine) return
-        // csEngineInit(dataRoot)
+    private val backend: EngineBackend = if (CinemaStudioNative.load()) {
+        NativeEngineBackend()
+    } else {
+        MockEngineBackend()
     }
 
-    fun createProject(name: String, parentDir: String): String {
-        if (useNativeEngine) error("UniFFI bindings not linked")
-        val safe = name.replace(" ", "_")
-        return "$parentDir/$safe.csproj"
-    }
+    val useNativeEngine: Boolean get() = backend is NativeEngineBackend
 
-    fun openProject(projectDir: String): String {
-        if (useNativeEngine) error("UniFFI bindings not linked")
-        return projectDir.substringAfterLast("/").removeSuffix(".csproj")
-    }
+    fun initialize(dataRoot: String? = null) = backend.initialize(dataRoot)
 
-    fun bridgeStatus(): String =
-        if (useNativeEngine) "{}" else """{"mode":"mock"}"""
+    fun createProject(name: String, parentDir: String): String =
+        backend.createProject(name, parentDir)
+
+    fun openProject(projectDir: String): String = backend.openProject(projectDir)
+
+    fun bridgeStatus(): String = backend.bridgeStatus()
 }

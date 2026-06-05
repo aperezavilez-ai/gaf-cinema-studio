@@ -73,13 +73,22 @@ final class ProjectStore: ObservableObject {
 
     func scrubTo(ms: Double) {
         playheadMs = ms
-        do {
-            let frame = try EngineBridge.shared.scrubTo(timeMs: UInt64(ms))
+        if let frame = try? EngineBridge.shared.scrubTo(timeMs: UInt64(ms)) {
             if let path = frame.primaryPath {
                 previewPath = path
             }
-        } catch {}
+        }
         refreshPreview(at: ms)
+    }
+
+    func importMedia(from sourcePath: String, into projectPath: String) {
+        do {
+            _ = try EngineBridge.shared.importMedia(sourcePath: sourcePath, into: projectPath)
+            loadDemoMediaIfNeeded()
+            refreshPreview(at: playheadMs)
+        } catch {
+            exportStatus = "Import failed"
+        }
     }
 
     func playbackPlay() {

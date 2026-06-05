@@ -44,5 +44,8 @@ jobs:
           cargo test --test integration_phase6
           cargo test --test integration_phase7
 
-      - name: Build FFI scaffold
-        run: cargo build --features ffi
+      - name: Build FFI + C ABI tests
+        run: |
+          cargo build --features ffi
+          cargo test --features ffi capi::
+          cargo test --test integration_phase10
