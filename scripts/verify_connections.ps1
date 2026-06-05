@@ -4,6 +4,7 @@ $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location (Join-Path $RepoRoot "..")
 
 $VercelUrl = if ($env:CINEMASTUDIO_VERCEL_URL) { $env:CINEMASTUDIO_VERCEL_URL } else { "https://gaf-cinema-studio.vercel.app" }
+$CustomUrl = if ($env:CINEMASTUDIO_PUBLIC_URL) { $env:CINEMASTUDIO_PUBLIC_URL } else { "https://cinemastudio.dev" }
 $GitHubRepo = "aperezavilez-ai/gaf-cinema-studio"
 
 Write-Host ""
@@ -54,6 +55,20 @@ catch {
 }
 
 Write-Host ""
+Write-Host "[Custom domain]" -ForegroundColor Yellow
+Write-Host "  URL: $CustomUrl"
+try {
+    $custom = Invoke-WebRequest -Uri "$CustomUrl/api/status" -UseBasicParsing -TimeoutSec 15
+    Write-Host "  OK  custom domain live ($($custom.StatusCode))" -ForegroundColor Green
+}
+catch {
+    $code = if ($_.Exception.Response) { [int]$_.Exception.Response.StatusCode } else { "DNS/unreachable" }
+    Write-Host "  WARN custom domain not serving yet ($code)" -ForegroundColor DarkYellow
+    Write-Host "  Tip: Vercel -> Domains -> verify DNS + redeploy" -ForegroundColor DarkYellow
+}
+
+Write-Host ""
 Write-Host "=== All core connections OK ===" -ForegroundColor Green
-Write-Host "Landing: $VercelUrl"
+Write-Host "Landing (Vercel): $VercelUrl"
+Write-Host "Landing (custom): $CustomUrl"
 Write-Host ""

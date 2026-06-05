@@ -7,6 +7,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object InfrastructureConfig {
+    const val CUSTOM_BASE = "https://cinemastudio.dev"
     const val VERCEL_BASE = "https://gaf-cinema-studio.vercel.app"
     const val GITHUB_REPO = "aperezavilez-ai/gaf-cinema-studio"
 }
@@ -19,8 +20,17 @@ data class InfrastructureStatus(
 )
 
 suspend fun fetchInfrastructureStatus(): InfrastructureStatus = withContext(Dispatchers.IO) {
-    try {
-        val conn = URL("${InfrastructureConfig.VERCEL_BASE}/api/status").openConnection() as HttpURLConnection
+    fetchFrom(InfrastructureConfig.CUSTOM_BASE)
+        ?: fetchFrom(InfrastructureConfig.VERCEL_BASE)?.copy(
+            vercel = "deployed (fallback)",
+            note = "Custom domain pending — using vercel.app",
+        )
+        ?: InfrastructureStatus(vercel = "offline", note = "Could not reach Vercel")
+}
+
+private fun fetchFrom(base: String): InfrastructureStatus? {
+    return try {
+        val conn = URL("$base/api/status").openConnection() as HttpURLConnection
         conn.requestMethod = "GET"
         conn.connectTimeout = 10_000
         conn.readTimeout = 10_000
@@ -35,6 +45,6 @@ suspend fun fetchInfrastructureStatus(): InfrastructureStatus = withContext(Disp
             note = connections.getJSONObject("supabase").optString("note", ""),
         )
     } catch (_: Exception) {
-        InfrastructureStatus(vercel = "offline", note = "Could not reach Vercel")
+        null
     }
 }

@@ -2,7 +2,8 @@ import Foundation
 
 /// Infrastructure endpoints — scaffold; fetches live status when online.
 enum InfrastructureConfig {
-    static let vercelBaseURL = URL(string: "https://gaf-cinema-studio.vercel.app")!
+    static let vercelBaseURL = URL(string: "https://cinemastudio.dev")!
+    static let vercelFallbackURL = URL(string: "https://gaf-cinema-studio.vercel.app")!
     static let githubRepo = "aperezavilez-ai/gaf-cinema-studio"
     static let statusPath = "/api/status"
 }
@@ -42,8 +43,19 @@ final class InfrastructureMonitor: ObservableObject {
             supabaseStatus = status.connections.supabase.status
             note = status.connections.supabase.note ?? ""
         } catch {
-            vercelStatus = "offline"
-            note = "Could not reach Vercel — check network"
+            // Fallback to *.vercel.app if custom domain still propagating
+            let fallback = InfrastructureConfig.vercelFallbackURL
+                .appendingPathComponent("api/status")
+            do {
+                let (data, _) = try await URLSession.shared.data(from: fallback)
+                let status = try JSONDecoder().decode(DeploymentStatus.self, from: data)
+                vercelStatus = "deployed (fallback)"
+                supabaseStatus = status.connections.supabase.status
+                note = "Custom domain pending — using vercel.app"
+            } catch {
+                vercelStatus = "offline"
+                note = "Could not reach Vercel — check network"
+            }
         }
     }
 }

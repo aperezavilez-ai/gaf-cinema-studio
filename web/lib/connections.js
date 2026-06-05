@@ -2,6 +2,9 @@
 
 const GITHUB_REPO = "aperezavilez-ai/gaf-cinema-studio";
 const MVP_VERSION = "1.0.0";
+const CUSTOM_DOMAIN =
+  process.env.CINEMASTUDIO_PUBLIC_URL || "https://cinemastudio.dev";
+const VERCEL_DOMAIN = "https://gaf-cinema-studio.vercel.app";
 
 function supabaseState() {
   const configured = Boolean(
@@ -20,11 +23,20 @@ function buildDeploymentStatus() {
     service: "cinemastudio-web",
     version: MVP_VERSION,
     mvp: { phases: "0-12", status: "complete" },
+    domains: {
+      primary: CUSTOM_DOMAIN,
+      vercel: VERCEL_DOMAIN,
+    },
     connections: {
       github: { status: "linked", repo: GITHUB_REPO },
       vercel: {
         status: "deployed",
         region: process.env.VERCEL_REGION ?? null,
+      },
+      customDomain: {
+        host: new URL(CUSTOM_DOMAIN).hostname,
+        status: "configured",
+        note: "Set CINEMASTUDIO_PUBLIC_URL in Vercel if using another domain",
       },
       supabase: supabaseState(),
     },
@@ -41,4 +53,11 @@ function stubResponse(name, connectSteps) {
   };
 }
 
-module.exports = { GITHUB_REPO, MVP_VERSION, buildDeploymentStatus, stubResponse };
+module.exports = {
+  GITHUB_REPO,
+  MVP_VERSION,
+  CUSTOM_DOMAIN,
+  VERCEL_DOMAIN,
+  buildDeploymentStatus,
+  stubResponse,
+};

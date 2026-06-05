@@ -10,7 +10,11 @@
 | **Vercel** | Deployed | Static landing + `/api/status` |
 | **Supabase** | Pending | Auth, backup metadata, beta telemetry (Phase 13+) |
 
-**Live:** [gaf-cinema-studio.vercel.app](https://gaf-cinema-studio.vercel.app) · Run `.\scripts\verify_connections.ps1`
+**Live:**
+- Custom: [cinemastudio.dev](https://cinemastudio.dev)
+- Vercel: [gaf-cinema-studio.vercel.app](https://gaf-cinema-studio.vercel.app)
+
+Run `.\scripts\verify_connections.ps1`
 
 ---
 
