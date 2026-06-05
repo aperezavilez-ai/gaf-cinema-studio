@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CinemaStudio</title>
+    <meta
+      name="description"
+      content="Mobile-first cinematic editing studio. Local-first, premium workflow."
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0a0a0c;
+        --surface: #141418;
+        --text: #f4f4f5;
+        --muted: #a1a1aa;
+        --accent: #c9a227;
+        --ok: #22c55e;
+        --pending: #f59e0b;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+        background: radial-gradient(ellipse at top, #1a1a22, var(--bg));
+        color: var(--text);
+        min-height: 100vh;
+        line-height: 1.5;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 3rem 1.5rem 4rem;
+      }
+      h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .tagline {
+        color: var(--muted);
+        margin-top: 0.5rem;
+        font-size: 1.05rem;
+      }
+      .badge {
+        display: inline-block;
+        margin-top: 1.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        background: var(--surface);
+        border: 1px solid #27272a;
+        font-size: 0.85rem;
+        color: var(--accent);
+      }
+      section {
+        margin-top: 2.5rem;
+        padding: 1.25rem 1.5rem;
+        background: var(--surface);
+        border: 1px solid #27272a;
+        border-radius: 12px;
+      }
+      h2 {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-bottom: 1rem;
+      }
+      ul {
+        list-style: none;
+      }
+      li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid #27272a;
+        font-size: 0.95rem;
+      }
+      li:last-child {
+        border-bottom: none;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        flex-shrink: 0;
+      }
+      .dot.ok {
+        background: var(--ok);
+      }
+      .dot.pending {
+        background: var(--pending);
+      }
+      .label {
+        display: flex;
+        align-items: center;
+      }
+      .state {
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+      .links {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      a {
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+      #status-note {
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>CinemaStudio</h1>
+      <p class="tagline">
+        Mobile cinematic editing — local-first, not a social editor.
+      </p>
+      <span class="badge">MVP v1.0.0 · Phases 0–12 complete</span>
+
+      <section>
+        <h2>Infrastructure</h2>
+        <ul id="connections">
+          <li>
+            <span class="label"
+              ><span class="dot ok"></span>GitHub</span
+            >
+            <span class="state" id="github-state">linked</span>
+          </li>
+          <li>
+            <span class="label"
+              ><span class="dot ok"></span>Vercel</span
+            >
+            <span class="state" id="vercel-state">deployed</span>
+          </li>
+          <li>
+            <span class="label"
+              ><span class="dot pending"></span>Supabase</span
+            >
+            <span class="state" id="supabase-state">pending</span>
+          </li>
+        </ul>
+        <p id="status-note">Loading status…</p>
+      </section>
+
+      <div class="links">
+        <a
+          href="https://github.com/aperezavilez-ai/gaf-cinema-studio"
+          target="_blank"
+          rel="noopener"
+          >GitHub repo</a
+        >
+        <a href="/api/status" target="_blank" rel="noopener">API status</a>
+      </div>
+    </main>
+    <script>
+      fetch("/api/status")
+        .then((r) => r.json())
+        .then((data) => {
+          const sb = data.connections?.supabase;
+          const el = document.getElementById("supabase-state");
+          const note = document.getElementById("status-note");
+          if (sb?.status === "configured") {
+            el.textContent = "configured";
+            el.previousElementSibling?.querySelector(".dot")?.classList.replace(
+              "pending",
+              "ok"
+            );
+          } else {
+            el.textContent = "pending";
+          }
+          note.textContent = sb?.note ?? "";
+        })
+        .catch(() => {
+          document.getElementById("status-note").textContent =
+            "Status API unavailable — static page only.";
+        });
+    </script>
+  </body>
+</html>

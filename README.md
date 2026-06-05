@@ -41,6 +41,14 @@ Mobile-first cinematic editing studio. Local-first architecture with a native vi
 
 **MVP roadmap complete.** Next: [BETA_RELEASE.md](docs/BETA_RELEASE.md) — TestFlight + Play upload.
 
+## Infrastructure
+
+| Service | Status |
+|---------|--------|
+| GitHub | Linked — CI on push |
+| Vercel | Deployed — landing + `/api/status` |
+| Supabase | Pending — see [DEPLOYMENT.md](docs/DEPLOYMENT.md) |
+
 See [docs/PHASE_GATES.md](docs/PHASE_GATES.md) for gate criteria.
 
 ## Quick Start (Engine)
@@ -65,6 +73,7 @@ Windows dev check:
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
+- [Deployment](docs/DEPLOYMENT.md) — GitHub, Vercel, Supabase (pending)
 - [Integration guide](docs/INTEGRATION.md)
 - [Project State Schema](docs/PROJECT_STATE.schema.json)
 - [Phase Gates](docs/PHASE_GATES.md)

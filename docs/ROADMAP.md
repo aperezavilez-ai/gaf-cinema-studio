@@ -28,7 +28,15 @@ See [BETA_RELEASE.md](BETA_RELEASE.md):
 2. 10 testers complete real projects
 3. Submit v1.0.0 for review when gates pass
 
-## Post-MVP (requires new phase docs)
+## Post-MVP infrastructure
+
+| Service | Status |
+|---------|--------|
+| GitHub + CI | Live |
+| Vercel (landing + status API) | Live |
+| Supabase (auth, backup, telemetry) | **Pending** — [DEPLOYMENT.md](DEPLOYMENT.md) |
+
+## Post-MVP features (requires new phase docs)
 
 - Production cloud OAuth + Stripe
 - Full UniFFI on-device sync
