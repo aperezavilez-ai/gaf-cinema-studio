@@ -66,7 +66,7 @@ catch {
     try {
         $customWww = Invoke-WebRequest -Uri "$CustomWwwUrl/api/status" -UseBasicParsing -TimeoutSec 15
         Write-Host "  OK  www.gafcinemastudio.com live ($($customWww.StatusCode))" -ForegroundColor Green
-        Write-Host "  --  apex $CustomUrl not resolving — add A record 76.76.21.21" -ForegroundColor DarkYellow
+        Write-Host "  --  apex $CustomUrl not resolving - add A record 76.76.21.21" -ForegroundColor DarkYellow
     }
     catch {
         $code = if ($_.Exception.Response) { [int]$_.Exception.Response.StatusCode } else { "DNS/unreachable" }

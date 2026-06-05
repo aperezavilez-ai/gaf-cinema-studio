@@ -18,4 +18,4 @@ Category: Video Players & Editors
 Content rating: Everyone
 Version: 1.0.0
 
-Privacy policy: https://YOUR_DOMAIN/privacy
+Privacy policy: https://gafcinemastudio.com/privacy
