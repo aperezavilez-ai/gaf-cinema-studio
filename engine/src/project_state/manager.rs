@@ -320,6 +320,7 @@ impl ProjectStateManager {
     }
 
     fn init_performance_stack(&mut self) -> Result<()> {
+        crate::native_bridge::init_render_backend();
         let pid = self.state.as_ref().map(|s| s.project_id);
         let profile = crate::device_profiler::detect();
         self.device.refresh_profile(profile.clone(), &self.event_bus, pid);
@@ -862,6 +863,36 @@ impl ProjectStateManager {
         }
         self.export_event_cursor = log.len();
         Ok(())
+    }
+
+    /// JSON snapshot of export state for UI.
+    pub fn export_status(&self) -> serde_json::Value {
+        let Some(state) = &self.state else {
+            return serde_json::json!({ "open": false });
+        };
+        let es = &state.export_state;
+        let last = es.history.last();
+        serde_json::json!({
+            "activeExportId": es.active_export_id,
+            "historyCount": es.history.len(),
+            "lastStatus": last.map(|r| format!("{:?}", r.status)),
+            "lastOutputPath": last.and_then(|r| r.output_path.clone()),
+            "ffmpegAvailable": crate::render_pipeline::ffmpeg_available(),
+        })
+    }
+
+    /// End-to-end workflow: import → timeline → edit → export (Gate 11).
+    pub fn run_edit_export_workflow(&mut self, media_path: &Path) -> Result<Uuid> {
+        use crate::timeline_engine::AddClipParams;
+
+        self.import_media(media_path)?;
+        let media_id = self.state.as_ref().unwrap().media.last().unwrap().id;
+        self.add_clip_to_timeline(AddClipParams {
+            media_id,
+            track_id: None,
+            start_ms: None,
+        })?;
+        self.start_export(ExportSettings::default())
     }
 
     fn record_history(&mut self) {

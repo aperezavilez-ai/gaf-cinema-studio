@@ -1,24 +1,22 @@
-//! FFmpeg render backend — scaffold only. Connect libav at integration time.
-//!
-//! Requires: FFmpeg dev libraries + feature `ffmpeg`.
-//! Until linked, falls back to error with clear message.
+//! FFmpeg CLI backend — real H.264 export when `ffmpeg` binary is available.
+//! No libav required; uses subprocess. Set `CINEMASTUDIO_FFMPEG_PATH` to override.
+
+use std::fs;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 
 use crate::error::{CinemaError, Result};
 use crate::project_state::types::ProjectState;
 use crate::render_pipeline::stub::StubRenderBackend;
+use crate::render_pipeline::timeline_resolve::{resolve_export_segments, ExportSegment};
 use crate::render_pipeline::types::{RenderBackend, RenderJob, RenderResult};
 use crate::render_pipeline::RenderBackendImpl;
 
-pub struct FfmpegRenderBackend {
-    /// Set true once FFmpeg is linked and probed at startup
-    linked: bool,
-}
+pub struct FfmpegRenderBackend;
 
 impl FfmpegRenderBackend {
     pub fn new() -> Self {
-        Self {
-            linked: std::env::var("CINEMASTUDIO_FFMPEG_LINKED").is_ok(),
-        }
+        Self
     }
 }
 
@@ -39,18 +37,288 @@ impl RenderBackendImpl for FfmpegRenderBackend {
         state: &ProjectState,
         on_progress: &dyn Fn(f64),
     ) -> Result<RenderResult> {
-        if !self.linked {
-            // Scaffold: document integration point; stub fallback for dev without FFmpeg
-            eprintln!(
-                "FFmpeg not linked — set CINEMASTUDIO_FFMPEG_LINKED=1 after wiring libav. Using stub fallback."
-            );
+        let Some(ffmpeg) = locate_ffmpeg() else {
+            eprintln!("ffmpeg not found in PATH — stub fallback. Install ffmpeg or set CINEMASTUDIO_FFMPEG_PATH.");
             return StubRenderBackend.render(job, state, on_progress);
-        }
+        };
 
-        // Integration point: concat timeline clips, encode H.264, mux MP4
-        // ffmpeg -f concat -i list.txt -c:v libx264 -preset medium -crf 23 out.mp4
-        Err(CinemaError::Storage(
-            "FFmpeg backend scaffold — implement libav bindings here".into(),
-        ))
+        render_with_ffmpeg(&ffmpeg, job, state, on_progress)
+    }
+}
+
+pub fn locate_ffmpeg() -> Option<PathBuf> {
+    if let Ok(path) = std::env::var("CINEMASTUDIO_FFMPEG_PATH") {
+        let p = PathBuf::from(path);
+        if p.exists() {
+            return Some(p);
+        }
+    }
+
+    let cmd = if cfg!(windows) { "where" } else { "which" };
+    let output = Command::new(cmd).arg("ffmpeg").output().ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let line = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .next()?
+        .trim()
+        .to_string();
+    if line.is_empty() {
+        None
+    } else {
+        Some(PathBuf::from(line))
+    }
+}
+
+pub fn render_with_ffmpeg(
+    ffmpeg: &Path,
+    job: &RenderJob,
+    state: &ProjectState,
+    on_progress: &dyn Fn(f64),
+) -> Result<RenderResult> {
+    let segments = resolve_export_segments(state)?;
+    let exports_dir = job.project_dir.join("exports");
+    let temp_dir = job.project_dir.join("cache").join(format!("export_{}", job.export_id));
+    fs::create_dir_all(&exports_dir)?;
+    fs::create_dir_all(&temp_dir)?;
+
+    on_progress(0.05);
+
+    let segment_files = extract_segments(ffmpeg, &segments, &temp_dir)?;
+    on_progress(0.4);
+
+    let output_path = exports_dir.join(format!(
+        "{}_{}x{}.mp4",
+        job.export_id, job.width, job.height
+    ));
+
+    if segment_files.len() == 1 {
+        encode_single(
+            ffmpeg,
+            &segment_files[0],
+            &output_path,
+            job.width,
+            job.height,
+            job.frame_rate,
+        )?;
+    } else {
+        let list_file = temp_dir.join("concat.txt");
+        write_concat_list(&list_file, &segment_files)?;
+        concat_and_encode(
+            ffmpeg,
+            &list_file,
+            &output_path,
+            job.width,
+            job.height,
+            job.frame_rate,
+        )?;
+    }
+
+    on_progress(0.95);
+
+    let sidecar = write_export_sidecar(&exports_dir, job, state, &output_path, "ffmpeg-cli")?;
+    let _ = fs::remove_dir_all(&temp_dir);
+
+    on_progress(1.0);
+
+    Ok(RenderResult {
+        export_id: job.export_id,
+        output_path,
+        backend: RenderBackend::Ffmpeg,
+        duration_ms: state.timeline.duration_ms,
+        sidecar_path: Some(sidecar),
+    })
+}
+
+fn extract_segments(
+    ffmpeg: &Path,
+    segments: &[ExportSegment],
+    temp_dir: &Path,
+) -> Result<Vec<PathBuf>> {
+    let mut paths = Vec::with_capacity(segments.len());
+
+    for (i, seg) in segments.iter().enumerate() {
+        let out = temp_dir.join(format!("seg_{i:03}.mp4"));
+        let start_sec = format!("{:.3}", seg.source_in_ms as f64 / 1000.0);
+        let dur_sec = format!("{:.3}", seg.duration_ms as f64 / 1000.0);
+
+        let status = Command::new(ffmpeg)
+            .args([
+                "-y",
+                "-ss",
+                &start_sec,
+                "-i",
+                &seg.source_path.to_string_lossy(),
+                "-t",
+                &dur_sec,
+                "-c:v",
+                "libx264",
+                "-preset",
+                "medium",
+                "-crf",
+                "23",
+                "-pix_fmt",
+                "yuv420p",
+                "-an",
+                &out.to_string_lossy(),
+            ])
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .map_err(|e| CinemaError::Storage(format!("ffmpeg segment extract failed: {e}")))?;
+
+        if !status.success() {
+            return Err(CinemaError::Storage(format!(
+                "ffmpeg segment {i} failed (exit {:?})",
+                status.code()
+            )));
+        }
+        paths.push(out);
+    }
+
+    Ok(paths)
+}
+
+fn write_concat_list(list_file: &Path, files: &[PathBuf]) -> Result<()> {
+    let mut content = String::new();
+    for f in files {
+        let escaped = f.to_string_lossy().replace('\'', "'\\''");
+        content.push_str(&format!("file '{escaped}'\n"));
+    }
+    fs::write(list_file, content)?;
+    Ok(())
+}
+
+fn concat_and_encode(
+    ffmpeg: &Path,
+    list_file: &Path,
+    output: &Path,
+    width: u32,
+    height: u32,
+    fps: f64,
+) -> Result<()> {
+    let scale = format!("scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2");
+    let fps_s = format!("{fps:.3}");
+
+    run_ffmpeg(
+        ffmpeg,
+        &[
+            "-y",
+            "-f",
+            "concat",
+            "-safe",
+            "0",
+            "-i",
+            &list_file.to_string_lossy(),
+            "-vf",
+            &scale,
+            "-r",
+            &fps_s,
+            "-c:v",
+            "libx264",
+            "-preset",
+            "medium",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-movflags",
+            "+faststart",
+            "-an",
+            &output.to_string_lossy(),
+        ],
+    )
+}
+
+fn encode_single(
+    ffmpeg: &Path,
+    input: &Path,
+    output: &Path,
+    width: u32,
+    height: u32,
+    fps: f64,
+) -> Result<()> {
+    let scale = format!("scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2");
+    let fps_s = format!("{fps:.3}");
+
+    run_ffmpeg(
+        ffmpeg,
+        &[
+            "-y",
+            "-i",
+            &input.to_string_lossy(),
+            "-vf",
+            &scale,
+            "-r",
+            &fps_s,
+            "-c:v",
+            "libx264",
+            "-preset",
+            "medium",
+            "-crf",
+            "23",
+            "-pix_fmt",
+            "yuv420p",
+            "-movflags",
+            "+faststart",
+            "-an",
+            &output.to_string_lossy(),
+        ],
+    )
+}
+
+fn run_ffmpeg(ffmpeg: &Path, args: &[&str]) -> Result<()> {
+    let status = Command::new(ffmpeg)
+        .args(args)
+        .stdout(Stdio::null())
+        .stderr(Stdio::piped())
+        .status()
+        .map_err(|e| CinemaError::Storage(format!("ffmpeg spawn failed: {e}")))?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err(CinemaError::Storage(format!(
+            "ffmpeg exited with code {:?}",
+            status.code()
+        )))
+    }
+}
+
+fn write_export_sidecar(
+    exports_dir: &Path,
+    job: &RenderJob,
+    state: &ProjectState,
+    output_path: &Path,
+    backend: &str,
+) -> Result<PathBuf> {
+    let sidecar = exports_dir.join(format!("{}.export.json", job.export_id));
+    let manifest = serde_json::json!({
+        "exportId": job.export_id,
+        "backend": backend,
+        "codec": "h264",
+        "resolution": format!("{}x{}", job.width, job.height),
+        "frameRate": job.frame_rate,
+        "outputPath": output_path.display().to_string(),
+        "timelineDurationMs": state.timeline.duration_ms,
+        "clipCount": state.timeline.tracks.iter().map(|t| t.clips.len()).sum::<usize>(),
+    });
+    fs::write(&sidecar, serde_json::to_string_pretty(&manifest)?)?;
+    Ok(sidecar)
+}
+
+/// Probe whether ffmpeg is usable (for manager auto-select).
+pub fn ffmpeg_available() -> bool {
+    locate_ffmpeg().is_some()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn locate_ffmpeg_does_not_panic() {
+        let _ = locate_ffmpeg();
     }
 }

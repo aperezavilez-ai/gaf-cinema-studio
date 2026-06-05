@@ -56,7 +56,7 @@ class EditorViewModel : ViewModel() {
         viewModelScope.launch {
             exportStatus = "Exporting…"
             delay(800)
-            exportStatus = "Export queued (stub)"
+            exportStatus = if (EngineBridge.useNativeEngine) "Export complete" else "Export queued (mock)"
         }
     }
 

@@ -52,7 +52,20 @@ pub fn decoder_registry() -> DecoderRegistry {
 }
 
 pub fn render_pipeline() -> RenderPipeline {
-    RenderPipeline::for_backend(BRIDGE.lock().unwrap().render_backend)
+    let backend = BRIDGE.lock().unwrap().render_backend;
+    match backend {
+        RenderBackend::Ffmpeg => RenderPipeline::for_backend(RenderBackend::Ffmpeg),
+        RenderBackend::Stub if crate::render_pipeline::ffmpeg_available() => {
+            RenderPipeline::for_backend(RenderBackend::Ffmpeg)
+        }
+        RenderBackend::Stub => RenderPipeline::for_backend(RenderBackend::Stub),
+    }
+}
+
+pub fn init_render_backend() {
+    if crate::render_pipeline::ffmpeg_available() {
+        set_render_backend(RenderBackend::Ffmpeg);
+    }
 }
 
 /// Decode frame — uses native callback if registered, else stub registry.
@@ -71,6 +84,7 @@ pub fn bridge_status() -> serde_json::Value {
         "decodeCallbackRegistered": guard.decode_callback.is_some(),
         "decoderBackend": format!("{:?}", guard.decoder_backend),
         "renderBackend": format!("{:?}", guard.render_backend),
+        "ffmpegAvailable": crate::render_pipeline::ffmpeg_available(),
     })
 }
 

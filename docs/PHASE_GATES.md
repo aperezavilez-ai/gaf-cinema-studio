@@ -167,6 +167,18 @@ Human approval required: respond with `CONTINUE PHASE` in chat.
 
 ---
 
+## Phase 11 — FFmpeg Export
+
+### Gate Criteria
+| # | Criterion | Target |
+|---|-----------|--------|
+| 11.1 | H.264 export via FFmpeg CLI | 1080p MP4 |
+| 11.2 | Multi-clip timeline resolve | Sorted segments |
+| 11.3 | Export async (non-blocking) | Queue |
+| 11.4 | Full workflow API | import → export |
+
+---
+
 ## Validation Protocol (every phase)
 
 1. Run automated tests

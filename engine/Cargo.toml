@@ -27,8 +27,8 @@ name = "ai_orchestrator_demo"
 path = "examples/ai_orchestrator_demo.rs"
 
 [[example]]
-name = "integration_scaffold_demo"
-path = "examples/integration_scaffold_demo.rs"
+name = "export_ffmpeg_demo"
+path = "examples/export_ffmpeg_demo.rs"
 
 [dependencies]
 serde.workspace = true

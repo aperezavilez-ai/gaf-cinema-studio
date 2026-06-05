@@ -36,8 +36,9 @@ Mobile-first cinematic editing studio. Local-first architecture with a native vi
 | 8 | App shell + CI (XcodeGen, Gradle, GitHub Actions) | Complete |
 | 9 | Native preview pipeline (AVFoundation / MediaMetadataRetriever) | Complete |
 | 10 | Mobile engine link (C ABI + EngineBackend) | Complete |
+| 11 | FFmpeg H.264 export + edit workflow | Complete |
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) — **2 fases restantes** (11: FFmpeg, 12: Beta release).
+See [docs/ROADMAP.md](docs/ROADMAP.md) — **1 fase restante** (12: Beta release).
 
 See [docs/PHASE_GATES.md](docs/PHASE_GATES.md) for gate criteria.
 

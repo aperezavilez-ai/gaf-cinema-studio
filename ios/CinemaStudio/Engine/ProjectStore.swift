@@ -19,6 +19,8 @@ final class ProjectStore: ObservableObject {
     @Published var durationMs: Double = 5000
     @Published var isPlaying = false
     @Published var exportStatus: String = ""
+    @Published var isExporting = false
+    @Published var exportProgress: Double = 0
 
     @Published var showProjectPicker = false
 
@@ -26,6 +28,7 @@ final class ProjectStore: ObservableObject {
 
     private let recentKey = "cinemastudio.recentProjects"
     private var playbackTimer: Timer?
+    private var exportTimer: Timer?
 
     init() {
         loadRecent()
@@ -35,6 +38,7 @@ final class ProjectStore: ObservableObject {
 
     deinit {
         playbackTimer?.invalidate()
+        exportTimer?.invalidate()
     }
 
     // MARK: - Project
@@ -146,10 +150,29 @@ final class ProjectStore: ObservableObject {
 
     func startExport() {
         exportStatus = "Exporting…"
+        isExporting = true
+        exportProgress = 0.1
         Task {
             _ = try? EngineBridge.shared.startExport()
-            try? await Task.sleep(nanoseconds: 800_000_000)
-            exportStatus = "Export queued (stub)"
+            startExportPolling()
+        }
+    }
+
+    private func startExportPolling() {
+        exportTimer?.invalidate()
+        var ticks = 0
+        exportTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self else { return }
+                ticks += 1
+                self.exportProgress = min(0.95, Double(ticks) * 0.08)
+                if ticks >= 15 {
+                    self.isExporting = false
+                    self.exportProgress = 1.0
+                    self.exportStatus = "Export complete (stub/mock)"
+                    self.exportTimer?.invalidate()
+                }
+            }
         }
     }
 

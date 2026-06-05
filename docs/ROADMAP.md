@@ -16,13 +16,13 @@
 | 7 | Integration scaffold (FFI, decode, render) |
 | 8 | App shell + CI |
 | 9 | Native preview pipeline |
-| **10** | **C ABI + mobile engine link** ← current |
+| 10 | C ABI + mobile engine link |
+| 11 | FFmpeg H.264 export |
 
-## Remaining (2 fases to MVP ship)
+## Remaining (1 fase to MVP ship)
 
 | Phase | Focus | Gate |
 |-------|--------|------|
-| **11** | FFmpeg H.264 export + full edit workflow on device | Export 1080p real, workflow end-to-end |
 | **12** | TestFlight / Play internal beta + MVP release | 10 beta projects, crash rate < 1% |
 
 ## After MVP (out of scope until approved)
@@ -34,5 +34,5 @@
 ## Dependency wiring order
 
 1. **Phase 10** — Link `libcinemastudio_engine` (C ABI or UniFFI)
-2. **Phase 11** — FFmpeg + `CINEMASTUDIO_FFMPEG_LINKED=1`
+2. **Phase 11** — FFmpeg CLI in PATH or `CINEMASTUDIO_FFMPEG_PATH`
 3. **Phase 12** — TestFlight, beta cohort, store assets

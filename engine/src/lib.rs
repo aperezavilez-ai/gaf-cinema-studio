@@ -40,7 +40,10 @@ pub use media_decoder::{
 };
 pub use native_bridge::{bridge_status, decode_frame_at, render_pipeline, set_decoder_backend, set_render_backend};
 pub use playback_engine::{PlaybackEngine, PlaybackMetrics, PlaybackMode, PlaybackStatus};
-pub use render_pipeline::{RenderBackend, RenderJob, RenderPipeline, RenderProgress, RenderResult};
+pub use render_pipeline::{
+    ffmpeg_available, locate_ffmpeg, resolve_export_segments, ExportSegment, RenderBackend,
+    RenderJob, RenderPipeline, RenderProgress, RenderResult, StubRenderBackend, FfmpegRenderBackend,
+};
 pub use project_state::{
     default_project_settings, validate_project_state, Mutation, ProjectSettings, ProjectState,
     ProjectStateManager, UndoRedoStack, ValidationReport,

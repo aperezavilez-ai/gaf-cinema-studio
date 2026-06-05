@@ -48,6 +48,9 @@ struct EditorView: View {
                         .foregroundStyle(.white.opacity(0.5))
                 }
 
+                ExportProgressView()
+                    .environmentObject(store)
+
                 TransportBar(
                     playheadMs: Binding(
                         get: { store.playheadMs },

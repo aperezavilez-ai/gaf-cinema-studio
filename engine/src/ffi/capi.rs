@@ -250,6 +250,36 @@ pub extern "C" fn cs_c_set_render_backend(name: *const c_char) -> i32 {
     0
 }
 
+#[no_mangle]
+pub extern "C" fn cs_c_start_export(width: u32, height: u32, frame_rate: f64) -> *mut c_char {
+    let result = with_manager(|m| {
+        m.start_export(ExportSettings {
+            width,
+            height,
+            frame_rate,
+            ..Default::default()
+        })
+    });
+    match result {
+        Ok(id) => to_c_string(id.to_string()),
+        Err(e) => to_c_string(format!("ERROR:{e}")),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn cs_c_export_status() -> *mut c_char {
+    let result = with_manager(|m| Ok(m.export_status().to_string()));
+    match result {
+        Ok(json) => to_c_string(json),
+        Err(e) => to_c_string(format!("ERROR:{e}")),
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn cs_c_ffmpeg_available() -> i32 {
+    i32::from(crate::render_pipeline::ffmpeg_available())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
