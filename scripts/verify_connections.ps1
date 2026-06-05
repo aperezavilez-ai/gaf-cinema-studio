@@ -4,7 +4,8 @@ $RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location (Join-Path $RepoRoot "..")
 
 $VercelUrl = if ($env:CINEMASTUDIO_VERCEL_URL) { $env:CINEMASTUDIO_VERCEL_URL } else { "https://gaf-cinema-studio.vercel.app" }
-$CustomUrl = if ($env:CINEMASTUDIO_PUBLIC_URL) { $env:CINEMASTUDIO_PUBLIC_URL } else { "https://cinemastudio.dev" }
+$CustomUrl = if ($env:CINEMASTUDIO_PUBLIC_URL) { $env:CINEMASTUDIO_PUBLIC_URL } else { "https://gafcinemastudio.com" }
+$CustomWwwUrl = "https://www.gafcinemastudio.com"
 $GitHubRepo = "aperezavilez-ai/gaf-cinema-studio"
 
 Write-Host ""
@@ -62,9 +63,16 @@ try {
     Write-Host "  OK  custom domain live ($($custom.StatusCode))" -ForegroundColor Green
 }
 catch {
-    $code = if ($_.Exception.Response) { [int]$_.Exception.Response.StatusCode } else { "DNS/unreachable" }
-    Write-Host "  WARN custom domain not serving yet ($code)" -ForegroundColor DarkYellow
-    Write-Host "  Tip: Vercel -> Domains -> verify DNS + redeploy" -ForegroundColor DarkYellow
+    try {
+        $customWww = Invoke-WebRequest -Uri "$CustomWwwUrl/api/status" -UseBasicParsing -TimeoutSec 15
+        Write-Host "  OK  www.gafcinemastudio.com live ($($customWww.StatusCode))" -ForegroundColor Green
+        Write-Host "  --  apex $CustomUrl not resolving — add A record 76.76.21.21" -ForegroundColor DarkYellow
+    }
+    catch {
+        $code = if ($_.Exception.Response) { [int]$_.Exception.Response.StatusCode } else { "DNS/unreachable" }
+        Write-Host "  WARN custom domain not serving yet ($code)" -ForegroundColor DarkYellow
+        Write-Host "  Tip: Vercel -> Domains -> verify DNS + redeploy" -ForegroundColor DarkYellow
+    }
 }
 
 Write-Host ""

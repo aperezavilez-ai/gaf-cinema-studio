@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://cinemastudio.dev/schemas/project-state/v1",
+  "$id": "https://gafcinemastudio.com/schemas/project-state/v1",
   "title": "CinemaStudio Project State",
   "description": "Single source of truth for a cinematic project. All modules read/write through ProjectStateManager only.",
   "type": "object",

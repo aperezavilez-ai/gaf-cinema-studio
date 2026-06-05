@@ -162,7 +162,7 @@ struct SettingsView: View {
                     .foregroundStyle(.white.opacity(0.4))
             }
 
-            Link("Open landing page", destination: InfrastructureConfig.vercelBaseURL)
+            Link("Open landing page", destination: InfrastructureConfig.customWwwURL)
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.7))
         }

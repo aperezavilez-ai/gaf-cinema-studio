@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "baseUrl": "https://cinemastudio.dev",
+  "baseUrl": "https://gafcinemastudio.com",
   "fallbackUrl": "https://gaf-cinema-studio.vercel.app",
   "routes": [
     {

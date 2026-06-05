@@ -32,7 +32,9 @@
 
 | URL | Status |
 |-----|--------|
-| https://gaf-cinema-studio.vercel.app | Landing |
+| https://gafcinemastudio.com | Custom domain (apex — configure DNS) |
+| https://www.gafcinemastudio.com | Custom domain (live) |
+| https://gaf-cinema-studio.vercel.app | Vercel default |
 | https://gaf-cinema-studio.vercel.app/api/status | Live |
 | https://gaf-cinema-studio.vercel.app/api/health | Live |
 | `/api/auth/session` | Stub 501 |

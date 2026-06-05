@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://cinemastudio.dev/schemas/deployment-status.v1.json",
+  "$id": "https://gafcinemastudio.com/schemas/deployment-status.v1.json",
   "title": "DeploymentStatus",
   "type": "object",
   "required": ["service", "version", "mvp", "connections"],

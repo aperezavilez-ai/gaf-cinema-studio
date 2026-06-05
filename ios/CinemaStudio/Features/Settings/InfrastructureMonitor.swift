@@ -2,7 +2,8 @@ import Foundation
 
 /// Infrastructure endpoints — scaffold; fetches live status when online.
 enum InfrastructureConfig {
-    static let vercelBaseURL = URL(string: "https://cinemastudio.dev")!
+    static let customBaseURL = URL(string: "https://gafcinemastudio.com")!
+    static let customWwwURL = URL(string: "https://www.gafcinemastudio.com")!
     static let vercelFallbackURL = URL(string: "https://gaf-cinema-studio.vercel.app")!
     static let githubRepo = "aperezavilez-ai/gaf-cinema-studio"
     static let statusPath = "/api/status"
@@ -34,28 +35,33 @@ final class InfrastructureMonitor: ObservableObject {
 
     func refresh() async {
         githubStatus = "linked"
-        let url = InfrastructureConfig.vercelBaseURL
-            .appendingPathComponent("api/status")
+        if await fetchStatus(from: InfrastructureConfig.customBaseURL) { return }
+        if await fetchStatus(from: InfrastructureConfig.customWwwURL) {
+            note = "Using www — configure apex DNS for gafcinemastudio.com"
+            return
+        }
+        if await fetchStatus(from: InfrastructureConfig.vercelFallbackURL) {
+            vercelStatus = "deployed (fallback)"
+            note = "Custom domain unreachable — using vercel.app"
+            return
+        }
+        vercelStatus = "offline"
+        note = "Could not reach Vercel — check network"
+    }
+
+    private func fetchStatus(from base: URL) async -> Bool {
+        let url = base.appendingPathComponent("api/status")
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let status = try JSONDecoder().decode(DeploymentStatus.self, from: data)
             vercelStatus = status.connections.vercel.status
             supabaseStatus = status.connections.supabase.status
-            note = status.connections.supabase.note ?? ""
-        } catch {
-            // Fallback to *.vercel.app if custom domain still propagating
-            let fallback = InfrastructureConfig.vercelFallbackURL
-                .appendingPathComponent("api/status")
-            do {
-                let (data, _) = try await URLSession.shared.data(from: fallback)
-                let status = try JSONDecoder().decode(DeploymentStatus.self, from: data)
-                vercelStatus = "deployed (fallback)"
-                supabaseStatus = status.connections.supabase.status
-                note = "Custom domain pending — using vercel.app"
-            } catch {
-                vercelStatus = "offline"
-                note = "Could not reach Vercel — check network"
+            if note.isEmpty {
+                note = status.connections.supabase.note ?? ""
             }
+            return true
+        } catch {
+            return false
         }
     }
 }

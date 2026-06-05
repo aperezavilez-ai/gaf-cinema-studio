@@ -3,7 +3,7 @@
 const GITHUB_REPO = "aperezavilez-ai/gaf-cinema-studio";
 const MVP_VERSION = "1.0.0";
 const CUSTOM_DOMAIN =
-  process.env.CINEMASTUDIO_PUBLIC_URL || "https://cinemastudio.dev";
+  process.env.CINEMASTUDIO_PUBLIC_URL || "https://gafcinemastudio.com";
 const VERCEL_DOMAIN = "https://gaf-cinema-studio.vercel.app";
 
 function supabaseState() {

@@ -5,8 +5,8 @@
   "description": "CinemaStudio is a premium mobile cinematic editing studio — not a social editor. Create projects locally, import media, edit on a timeline, and export H.264 — all on device.\n\n• Local-first — your projects stay on your device\n• Cinematic UI — minimal, guided workflow\n• AI orchestrator — suggestions, not chat\n• Optional cloud backup and Pro subscription",
   "keywords": ["video editor", "cinematic", "film", "timeline", "export", "mobile"],
   "primaryCategory": "PHOTO_AND_VIDEO",
-  "privacyPolicyUrl": "https://cinemastudio.dev/privacy",
-  "supportUrl": "https://cinemastudio.dev/support",
-  "marketingUrl": "https://cinemastudio.dev",
+  "privacyPolicyUrl": "https://gafcinemastudio.com/privacy",
+  "supportUrl": "https://gafcinemastudio.com/support",
+  "marketingUrl": "https://gafcinemastudio.com",
   "version": "1.0.0"
 }

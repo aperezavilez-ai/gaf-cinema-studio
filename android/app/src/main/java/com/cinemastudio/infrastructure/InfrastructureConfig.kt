@@ -7,7 +7,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 object InfrastructureConfig {
-    const val CUSTOM_BASE = "https://cinemastudio.dev"
+    const val CUSTOM_BASE = "https://gafcinemastudio.com"
+    const val CUSTOM_WWW_BASE = "https://www.gafcinemastudio.com"
     const val VERCEL_BASE = "https://gaf-cinema-studio.vercel.app"
     const val GITHUB_REPO = "aperezavilez-ai/gaf-cinema-studio"
 }
@@ -21,9 +22,12 @@ data class InfrastructureStatus(
 
 suspend fun fetchInfrastructureStatus(): InfrastructureStatus = withContext(Dispatchers.IO) {
     fetchFrom(InfrastructureConfig.CUSTOM_BASE)
+        ?: fetchFrom(InfrastructureConfig.CUSTOM_WWW_BASE)?.copy(
+            note = "Using www — configure apex DNS for gafcinemastudio.com",
+        )
         ?: fetchFrom(InfrastructureConfig.VERCEL_BASE)?.copy(
             vercel = "deployed (fallback)",
-            note = "Custom domain pending — using vercel.app",
+            note = "Custom domain unreachable — using vercel.app",
         )
         ?: InfrastructureStatus(vercel = "offline", note = "Could not reach Vercel")
 }
