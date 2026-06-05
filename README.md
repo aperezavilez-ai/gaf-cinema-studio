@@ -34,6 +34,7 @@ Mobile-first cinematic editing studio. Local-first architecture with a native vi
 | 6 | Beta + optional cloud sync | Complete |
 | 7 | Integration scaffold (FFI, decode, render) | Complete |
 | 8 | App shell + CI (XcodeGen, Gradle, GitHub Actions) | Complete |
+| 9 | Native preview pipeline (AVFoundation / MediaMetadataRetriever) | Complete |
 
 See [docs/PHASE_GATES.md](docs/PHASE_GATES.md) for gate criteria.
 

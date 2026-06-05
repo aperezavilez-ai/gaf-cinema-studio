@@ -22,6 +22,7 @@ ios/**/*.xcuserstate
 ios/**/xcuserdata/
 ios/**/*.xcodeproj/
 ios/**/*.xcworkspace/
+ios/Generated/
 
 # Android
 android/.gradle/

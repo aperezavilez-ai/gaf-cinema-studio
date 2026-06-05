@@ -1,15 +1,8 @@
 import Foundation
 import SwiftUI
+import Combine
 
-struct ProjectEntry: Identifiable, Codable {
-    let id: UUID
-    let name: String
-    let path: String
-    let openedAt: Date
-}
-
-/// Bridges SwiftUI to Rust engine via UniFFI (Phase 1 scaffold).
-/// Until FFI bindings are generated, uses mock behavior for UI development.
+/// Bridges SwiftUI to Rust engine via EngineBridge. Native preview via AVFoundation.
 @MainActor
 final class ProjectStore: ObservableObject {
     @Published var currentProject: ProjectEntry?
@@ -21,87 +14,178 @@ final class ProjectStore: ObservableObject {
     @Published var thermalLevel = "Normal"
     @Published var previewQuality = "Auto"
 
+    @Published var previewPath: String?
+    @Published var playheadMs: Double = 0
+    @Published var durationMs: Double = 5000
+    @Published var isPlaying = false
+    @Published var exportStatus: String = ""
+
+    @Published var showProjectPicker = false
+
+    let previewVM = PreviewViewModel()
+
     private let recentKey = "cinemastudio.recentProjects"
+    private var playbackTimer: Timer?
 
     init() {
         loadRecent()
         EngineBridge.shared.initialize()
+        VideoDecoderService.shared.registerWithEngine()
     }
+
+    deinit {
+        playbackTimer?.invalidate()
+    }
+
+    // MARK: - Project
 
     func createProject(name: String) {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
         let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let parent = docs.path
-
         do {
-            let path = try EngineBridge.shared.createProject(name: trimmed, parentDir: parent)
+            let path = try EngineBridge.shared.createProject(name: trimmed, parentDir: docs.path)
             let entry = ProjectEntry(id: UUID(), name: trimmed, path: path, openedAt: Date())
             currentProject = entry
             addRecent(entry)
+            resetEditorState()
         } catch {
-            // Fallback mock path if bridge fails
-            let path = docs.appendingPathComponent("\(trimmed.replacingOccurrences(of: " ", with: "_")).csproj").path
-            let entry = ProjectEntry(id: UUID(), name: trimmed, path: path, openedAt: Date())
-            currentProject = entry
-            addRecent(entry)
+            exportStatus = "Error creating project"
         }
     }
 
     func openProject(at path: String) {
-        let name: String
-        do {
-            name = try EngineBridge.shared.openProject(projectDir: path)
-        } catch {
-            name = (path as NSString).lastPathComponent.replacingOccurrences(of: ".csproj", with: "")
-        }
+        let name = (try? EngineBridge.shared.openProject(projectDir: path))
+            ?? (path as NSString).lastPathComponent.replacingOccurrences(of: ".csproj", with: "")
         let entry = ProjectEntry(id: UUID(), name: name, path: path, openedAt: Date())
         currentProject = entry
         addRecent(entry)
+        loadDemoMediaIfNeeded()
+        refreshPreview(at: playheadMs)
     }
 
-    // Phase 2 playback stubs — wire to UniFFI
+    func openProjectPicker() {
+        showProjectPicker = true
+    }
+
+    // MARK: - Playback
+
     func scrubTo(ms: Double) {
-        // TODO: cs_scrub_to(timeMs: UInt64(ms))
+        playheadMs = ms
+        do {
+            let frame = try EngineBridge.shared.scrubTo(timeMs: UInt64(ms))
+            if let path = frame.primaryPath {
+                previewPath = path
+            }
+        } catch {}
+        refreshPreview(at: ms)
     }
 
     func playbackPlay() {
-        // TODO: cs_playback_play()
+        isPlaying = true
+        try? EngineBridge.shared.playbackPlay()
+        playbackTimer?.invalidate()
+        playbackTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 24.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.isPlaying else { return }
+                let next = min(self.playheadMs + 1000.0 / 24.0, self.durationMs)
+                self.scrubTo(ms: next)
+                if next >= self.durationMs { self.playbackPause() }
+            }
+        }
     }
 
     func playbackPause() {
-        // TODO: cs_playback_pause()
+        isPlaying = false
+        playbackTimer?.invalidate()
+        playbackTimer = nil
+        try? EngineBridge.shared.playbackPause()
     }
 
     func loadTimelineMetadata(onDuration: @escaping (Double) -> Void) {
-        onDuration(5000)
+        onDuration(durationMs)
     }
 
-    func splitAtPlayhead() { /* TODO: cs_split_at_playhead() */ }
-    func deleteAtPlayhead() { /* TODO: cs_delete_at_playhead() */ }
-    func undo() { canUndo = false; canRedo = true }
-    func redo() { canRedo = false; canUndo = true }
-    func startExport() { /* TODO: cs_start_export() */ }
+    // MARK: - Edit
+
+    func splitAtPlayhead() {
+        if (try? EngineBridge.shared.splitAtPlayhead()) == true {
+            canUndo = true
+        }
+    }
+
+    func deleteAtPlayhead() {
+        if (try? EngineBridge.shared.deleteAtPlayhead()) == true {
+            canUndo = true
+        }
+    }
+
+    func undo() {
+        if (try? EngineBridge.shared.undo()) == true {
+            canRedo = true
+            canUndo = false
+        }
+    }
+
+    func redo() {
+        if (try? EngineBridge.shared.redo()) == true {
+            canUndo = true
+            canRedo = false
+        }
+    }
+
+    func startExport() {
+        exportStatus = "Exporting…"
+        Task {
+            _ = try? EngineBridge.shared.startExport()
+            try? await Task.sleep(nanoseconds: 800_000_000)
+            exportStatus = "Export queued (stub)"
+        }
+    }
+
+    // MARK: - AI
 
     func loadSuggestions(onResult: @escaping ([AiSuggestionItem]) -> Void) {
-        // TODO: cs_ai_suggestions() via UniFFI
-        onResult([
-            AiSuggestionItem(
-                id: UUID(),
-                message: "Tienes clips sin colocar en la timeline. ¿Crear un rough cut automático?",
-                priority: "high",
-                actionLabel: "Ejecutar",
-                isActionable: true
-            )
-        ])
+        onResult((try? EngineBridge.shared.aiSuggestions()) ?? [])
     }
 
-    func executeSuggestion(id: UUID) { /* TODO: cs_ai_execute(id) */ }
-    func dismissSuggestion(id: UUID) { /* TODO: cs_ai_dismiss(id) */ }
+    func executeSuggestion(id: UUID) {
+        try? EngineBridge.shared.executeSuggestion(id: id)
+    }
 
-    func openProjectPicker() {
-        // Phase 1: UIDocumentPickerViewController for .csproj folders
+    func dismissSuggestion(id: UUID) {
+        try? EngineBridge.shared.dismissSuggestion(id: id)
+    }
+
+    // MARK: - Private
+
+    private func resetEditorState() {
+        playheadMs = 0
+        durationMs = 5000
+        previewPath = nil
+        previewVM.clear()
+        playbackPause()
+    }
+
+    private func loadDemoMediaIfNeeded() {
+        guard let project = currentProject else { return }
+        let mediaDir = (project.path as NSString).appendingPathComponent("media")
+        if let files = try? FileManager.default.contentsOfDirectory(atPath: mediaDir) {
+            for file in files where file.hasSuffix(".mp4") || file.hasSuffix(".mov") {
+                previewPath = (mediaDir as NSString).appendingPathComponent(file)
+                durationMs = 5000
+                return
+            }
+        }
+    }
+
+    private func refreshPreview(at ms: Double) {
+        guard let path = previewPath else {
+            previewVM.clear()
+            return
+        }
+        previewVM.updatePreview(path: path, timeMs: UInt64(ms))
     }
 
     private func addRecent(_ entry: ProjectEntry) {
@@ -121,4 +205,11 @@ final class ProjectStore: ObservableObject {
         guard let data = try? JSONEncoder().encode(recentProjects) else { return }
         UserDefaults.standard.set(data, forKey: recentKey)
     }
+}
+
+struct ProjectEntry: Identifiable, Codable {
+    let id: UUID
+    let name: String
+    let path: String
+    let openedAt: Date
 }

@@ -1,20 +1,21 @@
 import SwiftUI
 
-/// Timeline + preview + minimal edit toolbar — Phase 3.
+/// Timeline + preview + minimal edit toolbar — wired to ProjectStore + AVFoundation preview.
 struct EditorView: View {
     @EnvironmentObject var store: ProjectStore
-    @State private var playheadMs: Double = 0
-    @State private var isPlaying = false
-    @State private var durationMs: Double = 5000
-    @State private var exportStatus: String = ""
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                PreviewPanel(isPlaying: isPlaying)
-                    .frame(maxHeight: .infinity)
+                PreviewFrameView(
+                    image: store.previewVM.previewImage,
+                    isPlaying: store.isPlaying,
+                    isDecoding: store.previewVM.isDecoding,
+                    error: store.previewVM.lastError
+                )
+                .frame(maxHeight: .infinity)
 
                 DeviceStatusBar(
                     tier: store.deviceTier,
@@ -32,43 +33,53 @@ struct EditorView: View {
                     onDelete: { store.deleteAtPlayhead() },
                     onUndo: { store.undo() },
                     onRedo: { store.redo() },
-                    onExport: {
-                        store.startExport()
-                        exportStatus = "Exporting…"
-                    }
+                    onExport: { store.startExport() }
                 )
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
 
-                if !exportStatus.isEmpty {
-                    Text(exportStatus)
+                if !store.exportStatus.isEmpty {
+                    Text(store.exportStatus)
                         .font(.caption)
                         .foregroundStyle(.white.opacity(0.5))
                 }
 
                 TransportBar(
-                    playheadMs: $playheadMs,
-                    durationMs: durationMs,
-                    isPlaying: $isPlaying,
-                    onScrub: { ms in store.scrubTo(ms: ms) },
-                    onPlay: { store.playbackPlay(); isPlaying = true },
-                    onPause: { store.playbackPause(); isPlaying = false }
+                    playheadMs: Binding(
+                        get: { store.playheadMs },
+                        set: { store.scrubTo(ms: $0) }
+                    ),
+                    durationMs: store.durationMs,
+                    isPlaying: Binding(
+                        get: { store.isPlaying },
+                        set: { $0 ? store.playbackPlay() : store.playbackPause() }
+                    ),
+                    onScrub: { store.scrubTo(ms: $0) },
+                    onPlay: { store.playbackPlay() },
+                    onPause: { store.playbackPause() }
                 )
                 .padding(.horizontal, 16)
                 .padding(.bottom, 8)
 
                 TimelineStrip(
-                    playheadMs: $playheadMs,
-                    durationMs: durationMs,
-                    onScrub: { ms in store.scrubTo(ms: ms) }
+                    playheadMs: Binding(
+                        get: { store.playheadMs },
+                        set: { store.scrubTo(ms: $0) }
+                    ),
+                    durationMs: store.durationMs,
+                    onScrub: { store.scrubTo(ms: $0) }
                 )
-                .frame(height: 80)
+                .frame(height: CinemaTheme.trackHeight)
                 .padding(.bottom, 16)
             }
         }
         .navigationTitle(store.currentProject?.name ?? "Editor")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { store.loadTimelineMetadata { durationMs = $0 } }
+        .onAppear {
+            store.loadTimelineMetadata { store.durationMs = $0 }
+            store.scrubTo(ms: store.playheadMs)
+        }
+        .onDisappear { store.playbackPause() }
     }
 }
 
@@ -113,27 +124,6 @@ struct ToolButton: View {
             }
             .foregroundStyle(.white.opacity(0.8))
         }
-    }
-}
-
-struct PreviewPanel: View {
-    let isPlaying: Bool
-
-    var body: some View {
-        ZStack {
-            Rectangle().fill(Color(white: 0.08))
-            VStack(spacing: 12) {
-                Image(systemName: isPlaying ? "play.fill" : "film")
-                    .font(.system(size: 48, weight: .ultraLight))
-                    .foregroundStyle(.white.opacity(0.3))
-                Text(isPlaying ? "PLAYING" : "PREVIEW")
-                    .font(.caption).tracking(3)
-                    .foregroundStyle(.white.opacity(0.25))
-            }
-        }
-        .aspectRatio(16/9, contentMode: .fit)
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
     }
 }
 

@@ -65,6 +65,12 @@ struct HomeView: View {
                 showCreateSheet = false
             }
         }
+        .sheet(isPresented: $store.showProjectPicker) {
+            ProjectDocumentPicker { url in
+                store.openProject(at: url.path)
+                store.showProjectPicker = false
+            }
+        }
     }
 }
 

@@ -38,14 +38,6 @@ struct GuidancePanel: View {
     }
 }
 
-struct AiSuggestionItem: Identifiable {
-    let id: UUID
-    let message: String
-    let priority: String
-    let actionLabel: String
-    let isActionable: Bool
-}
-
 struct SuggestionCard: View {
     let item: AiSuggestionItem
     let onExecute: () -> Void

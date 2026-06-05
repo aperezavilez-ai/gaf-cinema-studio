@@ -143,6 +143,18 @@ Human approval required: respond with `CONTINUE PHASE` in chat.
 
 ---
 
+## Phase 9 — Native Preview Pipeline
+
+### Gate Criteria
+| # | Criterion | Target |
+|---|-----------|--------|
+| 9.1 | iOS AVFoundation preview | Works at playhead |
+| 9.2 | Android frame preview | Works at playhead |
+| 9.3 | Mobile build scripts | iOS + Android scaffolds |
+| 9.4 | Document picker | iOS open .csproj |
+
+---
+
 ## Validation Protocol (every phase)
 
 1. Run automated tests
