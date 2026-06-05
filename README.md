@@ -49,6 +49,8 @@ Mobile-first cinematic editing studio. Local-first architecture with a native vi
 | Vercel | Deployed — landing + `/api/status` |
 | Supabase | Pending — see [DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 
+Verify: `.\scripts\verify_connections.ps1` · [Landing](https://gaf-cinema-studio.vercel.app)
+
 See [docs/PHASE_GATES.md](docs/PHASE_GATES.md) for gate criteria.
 
 ## Quick Start (Engine)
@@ -73,6 +75,7 @@ Windows dev check:
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
+- [Structure](docs/STRUCTURE.md) — monorepo map + API stubs
 - [Deployment](docs/DEPLOYMENT.md) — GitHub, Vercel, Supabase (pending)
 - [Integration guide](docs/INTEGRATION.md)
 - [Project State Schema](docs/PROJECT_STATE.schema.json)

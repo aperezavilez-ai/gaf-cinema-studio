@@ -1,0 +1,36 @@
+{
+  "version": "1",
+  "baseUrl": "https://gaf-cinema-studio.vercel.app",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/api/status",
+      "status": "live",
+      "description": "Deployment connection status"
+    },
+    {
+      "method": "GET",
+      "path": "/api/health",
+      "status": "live",
+      "description": "Liveness probe"
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/session",
+      "status": "stub",
+      "description": "Supabase auth proxy — returns 501 until wired"
+    },
+    {
+      "method": "POST",
+      "path": "/api/cloud/backup",
+      "status": "stub",
+      "description": "Backup metadata + presigned URL — returns 501 until wired"
+    },
+    {
+      "method": "POST",
+      "path": "/api/webhooks/stripe",
+      "status": "stub",
+      "description": "Stripe subscription webhooks — returns 501 until wired"
+    }
+  ]
+}

@@ -35,6 +35,8 @@ See [BETA_RELEASE.md](BETA_RELEASE.md):
 | GitHub + CI | Live |
 | Vercel (landing + status API) | Live |
 | Supabase (auth, backup, telemetry) | **Pending** — [DEPLOYMENT.md](DEPLOYMENT.md) |
+| Cloud API stubs (`/api/auth`, `/api/cloud`, Stripe webhook) | Scaffold 501 |
+| Mobile Settings → Infrastructure panel | Live status fetch |
 
 ## Post-MVP features (requires new phase docs)
 

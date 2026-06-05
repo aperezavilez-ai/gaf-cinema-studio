@@ -1,0 +1,39 @@
+name: Web CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "api/**"
+      - "shared/**"
+      - "vercel.json"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "api/**"
+      - "shared/**"
+      - "vercel.json"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Validate API modules load
+        run: |
+          node -e "require('./web/lib/connections')"
+          node -e "require('./api/status')"
+          node -e "require('./api/health')"
+
+      - name: Validate shared JSON
+        run: |
+          node -e "JSON.parse(require('fs').readFileSync('shared/schemas/deployment-status.v1.json'))"
+          node -e "JSON.parse(require('fs').readFileSync('shared/contracts/cloud-api.v1.json'))"

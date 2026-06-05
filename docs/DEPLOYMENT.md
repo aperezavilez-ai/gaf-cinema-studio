@@ -10,6 +10,8 @@
 | **Vercel** | Deployed | Static landing + `/api/status` |
 | **Supabase** | Pending | Auth, backup metadata, beta telemetry (Phase 13+) |
 
+**Live:** [gaf-cinema-studio.vercel.app](https://gaf-cinema-studio.vercel.app) · Run `.\scripts\verify_connections.ps1`
+
 ---
 
 ## Vercel
@@ -71,11 +73,25 @@ Until then, **all core features work offline** — no blocker for TestFlight/Pla
 ## Verify
 
 ```powershell
-# Local (optional — needs Vercel CLI)
-npx vercel dev
+.\scripts\verify_connections.ps1
+```
 
-# Production
-curl https://YOUR-VERCEL-URL.vercel.app/api/status
+**Production URLs (verified):**
+
+| URL | Status |
+|-----|--------|
+| https://gaf-cinema-studio.vercel.app | Landing |
+| https://gaf-cinema-studio.vercel.app/api/status | Live |
+| https://gaf-cinema-studio.vercel.app/api/health | Live (after deploy) |
+| `/api/auth/session` | Stub 501 — connect Supabase |
+| `/api/cloud/backup` | Stub 501 — connect Storage |
+| `/api/webhooks/stripe` | Stub 501 — connect Stripe |
+
+See also [STRUCTURE.md](STRUCTURE.md) for full monorepo map.
+
+```powershell
+# Manual curl
+curl https://gaf-cinema-studio.vercel.app/api/status
 ```
 
 Expected Supabase field while pending:

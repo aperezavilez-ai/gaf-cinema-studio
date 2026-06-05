@@ -25,7 +25,7 @@ pub mod ffi;
 pub use ai_orchestrator::AiOrchestrator;
 pub use beta::{BetaCompletion, BetaRegistry, BetaTracker};
 pub use billing::{activate_pro_stub, cancel_subscription, pro_features_enabled, BillingStore, SubscriptionState, SubscriptionTier};
-pub use cloud::{login_stub, AuthSession, AuthStore, BackupRecord, CloudBackupService, CloudService};
+pub use cloud::{login_stub, active_backend, backend_status, AuthSession, AuthStore, BackupRecord, BackendStatus, CloudBackendKind, CloudBackupService, CloudService};
 pub use crash_reporting::CrashReporter;
 pub use device_profiler::{
     detect as detect_device, parse_hints_json, DeviceController, DeviceProfile, DeviceTier,

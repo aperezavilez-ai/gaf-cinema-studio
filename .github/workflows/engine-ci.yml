@@ -58,3 +58,6 @@ jobs:
 
       - name: MVP release gates (Phase 12)
         run: cargo test --test integration_phase12
+
+      - name: Infrastructure scaffold (Phase 13)
+        run: cargo test --test integration_phase13

@@ -3,6 +3,7 @@ import SwiftUI
 /// Account, cloud backup, billing, and telemetry — all optional (local-first).
 struct SettingsView: View {
     @EnvironmentObject var store: ProjectStore
+    @StateObject private var infrastructure = InfrastructureMonitor()
     @State private var loggedIn = false
     @State private var email = ""
     @State private var password = ""
@@ -26,6 +27,7 @@ struct SettingsView: View {
                     cloudSection
                     billingSection
                     privacySection
+                    infrastructureSection
 
                     NavigationLink(destination: BetaProgramView()) {
                         Label("Beta Program", systemImage: "flag.checkered")
@@ -47,6 +49,7 @@ struct SettingsView: View {
         }
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
+        .task { await infrastructure.refresh() }
     }
 
     private var accountSection: some View {
@@ -143,6 +146,38 @@ struct SettingsView: View {
                 .tint(.white)
                 .foregroundStyle(.white)
         }
+    }
+
+    private var infrastructureSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionHeader("Infrastructure", subtitle: "GitHub + Vercel live · Supabase pending")
+
+            statusRow("GitHub", infrastructure.githubStatus)
+            statusRow("Vercel", infrastructure.vercelStatus)
+            statusRow("Supabase", infrastructure.supabaseStatus)
+
+            if !infrastructure.note.isEmpty {
+                Text(infrastructure.note)
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.4))
+            }
+
+            Link("Open landing page", destination: InfrastructureConfig.vercelBaseURL)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.7))
+        }
+    }
+
+    private func statusRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label)
+                .foregroundStyle(.white.opacity(0.7))
+            Spacer()
+            Text(value)
+                .font(.caption)
+                .foregroundStyle(.white)
+        }
+        .padding(.vertical, 4)
     }
 
     private func sectionHeader(_ title: String, subtitle: String) -> some View {
