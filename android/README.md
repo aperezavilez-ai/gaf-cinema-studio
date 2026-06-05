@@ -1,21 +1,41 @@
 # CinemaStudio Android
 
-Jetpack Compose shell — engine via UniFFI/JNI (wire at integration).
+Jetpack Compose shell — Gradle project openable in Android Studio.
+
+## Status (Phase 8)
+
+- Full Gradle project (`app/` module)
+- Compose UI: Home, Editor, Settings
+- `EngineBridge` + `VideoDecoderService` (MediaCodec scaffold)
+- Navigation with NavHost
+
+## Open in Android Studio
+
+1. Open the `android/` folder (not repo root)
+2. Wait for Gradle sync
+3. Run on emulator or device (API 26+)
+
+Requires **JDK 17**.
+
+## Wire Rust engine
+
+1. Add UniFFI Kotlin bindings to `app/src/main/java`
+2. Build Rust for Android targets (`aarch64-linux-android`, etc.)
+3. Set `EngineBridge.useNativeEngine = true`
+4. Register MediaCodec decode callback
+
+See [docs/INTEGRATION.md](../docs/INTEGRATION.md).
 
 ## Structure
 
 ```
-android/CinemaStudio/
-├── MainActivity.kt          Compose home (scaffold)
-└── engine/
-    └── EngineBridge.kt      Kotlin → Rust FFI facade
+android/
+├── app/
+│   ├── build.gradle.kts
+│   └── src/main/java/com/cinemastudio/
+│       ├── MainActivity.kt
+│       ├── engine/
+│       └── ui/
+├── settings.gradle.kts
+└── build.gradle.kts
 ```
-
-## Integration checklist
-
-1. Install Android NDK + Rust targets (`aarch64-linux-android`, etc.)
-2. Run `scripts/generate_bindings.sh android`
-3. Set `EngineBridge.useNativeEngine = true`
-4. Wire `MediaCodec` decode callback → Rust `native_bridge`
-
-See [docs/INTEGRATION.md](../docs/INTEGRATION.md).

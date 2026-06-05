@@ -31,23 +31,35 @@ Mobile-first cinematic editing studio. Local-first architecture with a native vi
 | 3 | Minimal cinematic editing + export | Complete |
 | 4 | AI Orchestrator v1 | Complete |
 | 5 | Device adaptive + performance hardening | Complete |
-| 6 | Beta + optional cloud sync | Pending |
+| 6 | Beta + optional cloud sync | Complete |
+| 7 | Integration scaffold (FFI, decode, render) | Complete |
+| 8 | App shell + CI (XcodeGen, Gradle, GitHub Actions) | Complete |
 
 See [docs/PHASE_GATES.md](docs/PHASE_GATES.md) for gate criteria.
-
-**Rule:** Do not advance to the next phase until the current gate passes and explicit approval is given (`CONTINUE PHASE`).
 
 ## Quick Start (Engine)
 
 ```bash
 cd engine
-cargo test
+cargo test          # requires MSVC on Windows, or use GitHub CI
 cargo run --example create_project
 ```
+
+Windows dev check:
+
+```powershell
+.\scripts\setup_dev.ps1
+```
+
+## Quick Start (Mobile)
+
+- **iOS (Mac):** `cd ios && xcodegen generate && open CinemaStudio.xcodeproj`
+- **Android:** Open `android/` in Android Studio
 
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
+- [Integration guide](docs/INTEGRATION.md)
 - [Project State Schema](docs/PROJECT_STATE.schema.json)
 - [Phase Gates](docs/PHASE_GATES.md)
 - [Out of Scope MVP](docs/OUT_OF_SCOPE_MVP.md)

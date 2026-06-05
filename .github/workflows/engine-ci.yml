@@ -1,0 +1,48 @@
+name: Engine CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "engine/**"
+      - "Cargo.toml"
+      - ".github/workflows/engine-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "engine/**"
+      - "Cargo.toml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: engine
+
+      - name: Run unit tests
+        run: cargo test --lib
+
+      - name: Run integration tests
+        run: |
+          cargo test --test integration_phase1
+          cargo test --test integration_phase2
+          cargo test --test integration_phase3
+          cargo test --test integration_phase4
+          cargo test --test integration_phase5
+          cargo test --test integration_phase6
+          cargo test --test integration_phase7
+
+      - name: Build FFI scaffold
+        run: cargo build --features ffi

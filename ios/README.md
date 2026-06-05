@@ -1,42 +1,46 @@
 # iOS Shell — CinemaStudio
 
-> Phase 1+: SwiftUI app that wraps the Rust engine via FFI.
+SwiftUI app wrapping the Rust engine via UniFFI.
 
-## Status
+## Status (Phase 8)
 
-Phase 0: **Placeholder only**. No Xcode project yet.
+- SwiftUI sources: Home, Editor, Settings, Guidance, DeviceStatus
+- `EngineBridge` + `VideoDecoderService` (AVFoundation scaffold)
+- `project.yml` for XcodeGen — generates openable Xcode project on Mac
 
-## Planned stack
+## Generate Xcode project (Mac)
 
-- Swift 5.9+
-- SwiftUI
-- UniFFI or C ABI bridge to `cinemastudio-engine`
-- AVFoundation for media capture/import (Phase 1)
-- Metal for GPU preview (Phase 2)
+```bash
+brew install xcodegen
+cd ios
+xcodegen generate
+open CinemaStudio.xcodeproj
+```
 
-## Phase 1 deliverables
+Or: `./scripts/generate_xcode.sh`
 
-- [ ] Xcode project setup
-- [ ] FFI bindings to Rust engine
-- [ ] Home screen: New Project / Open Project
-- [ ] Project browser (local `.csproj` folders)
-- [ ] Wire create/open/save to `ProjectStateManager`
+## Wire Rust engine
 
-## Directory plan (Phase 1)
+1. Build engine for iOS: `cargo build --release --target aarch64-apple-ios --features ffi`
+2. Run `scripts/generate_bindings.sh`
+3. Link static lib in Xcode (see `ios/project.yml` comments)
+4. Set `EngineBridge.shared.useNativeEngine = true`
+
+## Structure
 
 ```
 ios/
+├── project.yml              XcodeGen spec
 ├── CinemaStudio/
-│   ├── App/
-│   ├── Features/
-│   │   ├── Home/
-│   │   └── Project/
-│   ├── Engine/          # FFI wrapper
-│   └── Design/          # UI components
-└── CinemaStudio.xcodeproj
+│   ├── App/                 CinemaStudioApp.swift
+│   ├── Design/              Theme.swift
+│   ├── Engine/              EngineBridge, ProjectStore, VideoDecoderService
+│   └── Features/            Home, Editor, Settings
+└── CinemaStudio.xcodeproj   (generated — not committed)
 ```
 
-## Build note
+## Requirements
 
-Engine must be compiled as `staticlib` for iOS targets before linking.
-See `docs/ARCHITECTURE.md` FFI section.
+- iOS 17+
+- Xcode 15+
+- Swift 5.9+

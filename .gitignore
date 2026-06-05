@@ -20,6 +20,8 @@ ios/**/DerivedData/
 ios/**/build/
 ios/**/*.xcuserstate
 ios/**/xcuserdata/
+ios/**/*.xcodeproj/
+ios/**/*.xcworkspace/
 
 # Android
 android/.gradle/

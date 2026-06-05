@@ -119,6 +119,30 @@ Human approval required: respond with `CONTINUE PHASE` in chat.
 
 ---
 
+## Phase 7 — Integration Scaffold
+
+### Gate Criteria
+| # | Criterion | Target |
+|---|-----------|--------|
+| 7.1 | Decoder trait + stub | Works |
+| 7.2 | Render pipeline + export refactor | Works |
+| 7.3 | UniFFI full API surface | Exported |
+| 7.4 | Native bridge hooks | Registered |
+
+---
+
+## Phase 8 — App Shell + CI
+
+### Gate Criteria
+| # | Criterion | Target |
+|---|-----------|--------|
+| 8.1 | iOS XcodeGen project | Generatable |
+| 8.2 | Android Gradle project | Openable |
+| 8.3 | GitHub Actions CI | Tests pass |
+| 8.4 | Editor UI both platforms | Scaffold |
+
+---
+
 ## Validation Protocol (every phase)
 
 1. Run automated tests
