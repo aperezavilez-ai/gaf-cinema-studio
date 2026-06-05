@@ -1,0 +1,46 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# iOS
+ios/**/DerivedData/
+ios/**/build/
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/*.iml
+
+# CinemaStudio runtime
+*.csproj.bak
+.cinemastudio/cache/
+.cinemastudio/temp/
+.cinemastudio/proxies/
+
+# Secrets
+.env
+.env.*
+*.pem
+*.p12
+
+# Test artifacts
+coverage/
+*.profraw

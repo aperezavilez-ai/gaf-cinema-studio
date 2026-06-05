@@ -1,0 +1,309 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cinemastudio.dev/schemas/project-state/v1",
+  "title": "CinemaStudio Project State",
+  "description": "Single source of truth for a cinematic project. All modules read/write through ProjectStateManager only.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "projectId",
+    "metadata",
+    "media",
+    "timeline",
+    "workflowState",
+    "aiState",
+    "renderState",
+    "exportState",
+    "storageState",
+    "createdAt",
+    "updatedAt"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version for migrations. Increment on breaking changes."
+    },
+    "projectId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Immutable project identifier."
+    },
+    "metadata": {
+      "$ref": "#/$defs/ProjectMetadata"
+    },
+    "media": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/MediaAsset" },
+      "description": "Indexed media vault entries."
+    },
+    "timeline": {
+      "$ref": "#/$defs/Timeline"
+    },
+    "workflowState": {
+      "$ref": "#/$defs/WorkflowState"
+    },
+    "aiState": {
+      "$ref": "#/$defs/AiState"
+    },
+    "renderState": {
+      "$ref": "#/$defs/RenderState"
+    },
+    "exportState": {
+      "$ref": "#/$defs/ExportState"
+    },
+    "storageState": {
+      "$ref": "#/$defs/StorageState"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "$defs": {
+    "ProjectMetadata": {
+      "type": "object",
+      "required": ["name", "frameRate", "resolution"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "description": { "type": "string", "maxLength": 4096 },
+        "frameRate": {
+          "type": "number",
+          "enum": [23.976, 24, 25, 29.97, 30, 50, 59.94, 60]
+        },
+        "resolution": {
+          "type": "object",
+          "required": ["width", "height"],
+          "properties": {
+            "width": { "type": "integer", "minimum": 640 },
+            "height": { "type": "integer", "minimum": 360 }
+          }
+        },
+        "aspectRatio": { "type": "string", "default": "16:9" },
+        "colorSpace": {
+          "type": "string",
+          "enum": ["rec709", "rec2020", "dci-p3"],
+          "default": "rec709"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "maxItems": 32
+        }
+      }
+    },
+    "MediaAsset": {
+      "type": "object",
+      "required": ["id", "originalPath", "fileName", "mimeType", "durationMs", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "originalPath": { "type": "string" },
+        "proxyPath": { "type": ["string", "null"] },
+        "thumbnailPath": { "type": ["string", "null"] },
+        "fileName": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "width": { "type": "integer", "minimum": 0 },
+        "height": { "type": "integer", "minimum": 0 },
+        "fileSizeBytes": { "type": "integer", "minimum": 0 },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "indexing", "ready", "error", "missing"]
+        },
+        "importedAt": { "type": "string", "format": "date-time" },
+        "checksum": { "type": "string" }
+      }
+    },
+    "Timeline": {
+      "type": "object",
+      "required": ["durationMs", "playheadMs", "tracks"],
+      "additionalProperties": false,
+      "properties": {
+        "durationMs": { "type": "integer", "minimum": 0 },
+        "playheadMs": { "type": "integer", "minimum": 0 },
+        "tracks": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Track" }
+        },
+        "markers": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Marker" }
+        }
+      }
+    },
+    "Track": {
+      "type": "object",
+      "required": ["id", "type", "clips", "order"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "type": { "type": "string", "enum": ["video", "audio"] },
+        "name": { "type": "string" },
+        "order": { "type": "integer", "minimum": 0 },
+        "muted": { "type": "boolean", "default": false },
+        "clips": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Clip" }
+        }
+      }
+    },
+    "Clip": {
+      "type": "object",
+      "required": ["id", "mediaId", "startMs", "durationMs", "sourceInMs", "sourceOutMs"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "mediaId": { "type": "string", "format": "uuid" },
+        "startMs": { "type": "integer", "minimum": 0 },
+        "durationMs": { "type": "integer", "minimum": 1 },
+        "sourceInMs": { "type": "integer", "minimum": 0 },
+        "sourceOutMs": { "type": "integer", "minimum": 0 },
+        "label": { "type": "string" },
+        "transitions": {
+          "type": "object",
+          "properties": {
+            "fadeInMs": { "type": "integer", "minimum": 0 },
+            "fadeOutMs": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "Marker": {
+      "type": "object",
+      "required": ["id", "timeMs", "label"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "timeMs": { "type": "integer", "minimum": 0 },
+        "label": { "type": "string" },
+        "color": { "type": "string" }
+      }
+    },
+    "WorkflowState": {
+      "type": "object",
+      "required": ["phase", "completedSteps"],
+      "additionalProperties": false,
+      "properties": {
+        "phase": {
+          "type": "string",
+          "enum": ["import", "organize", "edit", "review", "export", "complete"]
+        },
+        "completedSteps": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "lastAction": { "type": "string" },
+        "lastActionAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "AiState": {
+      "type": "object",
+      "required": ["suggestions", "dismissedSuggestionIds"],
+      "additionalProperties": false,
+      "properties": {
+        "suggestions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/AiSuggestion" }
+        },
+        "dismissedSuggestionIds": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        },
+        "lastAnalysisAt": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "AiSuggestion": {
+      "type": "object",
+      "required": ["id", "type", "priority", "message", "actionId", "createdAt"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "type": {
+          "type": "string",
+          "enum": ["workflow", "edit", "audio", "export", "organization"]
+        },
+        "priority": { "type": "string", "enum": ["low", "medium", "high"] },
+        "message": { "type": "string" },
+        "actionId": { "type": "string" },
+        "payload": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "RenderState": {
+      "type": "object",
+      "required": ["previewQuality", "activeJobs"],
+      "additionalProperties": false,
+      "properties": {
+        "previewQuality": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "auto"]
+        },
+        "activeJobs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/RenderJob" }
+        },
+        "lastPreviewFrameAt": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "RenderJob": {
+      "type": "object",
+      "required": ["id", "type", "status", "progress"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "type": { "type": "string", "enum": ["proxy", "preview", "export", "thumbnail"] },
+        "status": {
+          "type": "string",
+          "enum": ["queued", "running", "completed", "failed", "cancelled"]
+        },
+        "progress": { "type": "number", "minimum": 0, "maximum": 1 },
+        "errorMessage": { "type": ["string", "null"] }
+      }
+    },
+    "ExportState": {
+      "type": "object",
+      "required": ["history"],
+      "additionalProperties": false,
+      "properties": {
+        "activeExportId": { "type": ["string", "null"], "format": "uuid" },
+        "history": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ExportRecord" }
+        }
+      }
+    },
+    "ExportRecord": {
+      "type": "object",
+      "required": ["id", "format", "resolution", "status", "createdAt"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "format": { "type": "string", "enum": ["mp4", "mov"] },
+        "resolution": { "type": "string" },
+        "outputPath": { "type": ["string", "null"] },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "running", "completed", "failed"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "completedAt": { "type": ["string", "null"], "format": "date-time" }
+      }
+    },
+    "StorageState": {
+      "type": "object",
+      "required": ["projectRoot", "cacheSizeBytes", "proxySizeBytes"],
+      "additionalProperties": false,
+      "properties": {
+        "projectRoot": { "type": "string" },
+        "cacheSizeBytes": { "type": "integer", "minimum": 0 },
+        "proxySizeBytes": { "type": "integer", "minimum": 0 },
+        "lastCleanupAt": { "type": ["string", "null"], "format": "date-time" },
+        "autosaveEnabled": { "type": "boolean", "default": true },
+        "autosaveIntervalMs": { "type": "integer", "default": 5000 }
+      }
+    }
+  }
+}

@@ -1,0 +1,56 @@
+[package]
+name = "cinemastudio-engine"
+description = "CinemaStudio video engine core — project state, timeline, playback"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[lib]
+name = "cinemastudio_engine"
+crate-type = ["lib", "staticlib", "cdylib"]
+
+[[example]]
+name = "create_project"
+path = "examples/create_project.rs"
+
+[[example]]
+name = "playback_demo"
+path = "examples/playback_demo.rs"
+
+[[example]]
+name = "edit_export_demo"
+path = "examples/edit_export_demo.rs"
+
+[[example]]
+name = "ai_orchestrator_demo"
+path = "examples/ai_orchestrator_demo.rs"
+
+[[example]]
+name = "integration_scaffold_demo"
+path = "examples/integration_scaffold_demo.rs"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+thiserror.workspace = true
+rusqlite.workspace = true
+sha2.workspace = true
+mime_guess.workspace = true
+
+[features]
+default = []
+ffi = ["dep:uniffi"]
+ffmpeg = []
+
+[dependencies.uniffi]
+version = "0.28"
+optional = true
+
+[build-dependencies]
+uniffi = { version = "0.28", features = ["build"] }
+
+[dev-dependencies]
+tempfile = "3"

@@ -1,0 +1,38 @@
+---
+description: Rust engine conventions for CinemaStudio video core
+globs: engine/**/*.rs
+alwaysApply: false
+---
+
+# Engine (Rust) Conventions
+
+## Module layout
+- `project_state/` — types, validation, mutations
+- `persistence/` — SQLite, autosave, recovery (Phase 1)
+- `event_bus/` — typed events, subscribers
+- `error/` — `CinemaError` unified error type
+
+## Patterns
+```rust
+// ✅ State mutation via manager
+manager.apply(Mutation::AddClip { ... })?;
+
+// ❌ Direct timeline manipulation from outside project_state
+timeline.clips.push(clip);
+```
+
+## Errors
+Use `thiserror` + `Result<T, CinemaError>`. Never panic in library code.
+
+## Serialization
+All public types: `Serialize` + `Deserialize`. Match `docs/PROJECT_STATE.schema.json`.
+
+## Tests
+- Unit tests colocated in same file (`#[cfg(test)]`)
+- Integration tests in `engine/tests/`
+- Persistence tests must include recovery scenarios
+
+## Performance
+- Avoid allocations in hot paths (playback, scrub)
+- Use `Arc` for shared read-only state
+- Document perf budget if adding new hot-path code

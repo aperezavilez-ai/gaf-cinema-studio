@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "projectId": "550e8400-e29b-41d4-a716-446655440000",
+  "metadata": {
+    "name": "Example Film",
+    "description": "Phase 0 fixture project",
+    "frameRate": 24,
+    "resolution": { "width": 1920, "height": 1080 },
+    "aspectRatio": "16:9",
+    "colorSpace": "rec709",
+    "tags": ["demo", "phase-0"]
+  },
+  "media": [],
+  "timeline": {
+    "durationMs": 0,
+    "playheadMs": 0,
+    "tracks": [
+      {
+        "id": "660e8400-e29b-41d4-a716-446655440001",
+        "type": "video",
+        "name": "Video 1",
+        "order": 0,
+        "muted": false,
+        "clips": []
+      },
+      {
+        "id": "660e8400-e29b-41d4-a716-446655440002",
+        "type": "audio",
+        "name": "Audio 1",
+        "order": 1,
+        "muted": false,
+        "clips": []
+      }
+    ],
+    "markers": []
+  },
+  "workflowState": {
+    "phase": "import",
+    "completedSteps": [],
+    "lastAction": "project_created",
+    "lastActionAt": "2026-06-05T12:00:00Z"
+  },
+  "aiState": {
+    "suggestions": [],
+        "dismissedSuggestionIds": [],
+        "dismissedActionIds": [],
+        "lastAnalysisAt": null
+  },
+  "renderState": {
+    "previewQuality": "auto",
+    "activeJobs": [],
+    "lastPreviewFrameAt": null
+  },
+  "exportState": {
+    "activeExportId": null,
+    "history": []
+  },
+  "storageState": {
+    "projectRoot": "/projects/Example_Film.csproj",
+    "cacheSizeBytes": 0,
+    "proxySizeBytes": 0,
+    "lastCleanupAt": null,
+    "autosaveEnabled": true,
+    "autosaveIntervalMs": 5000
+  },
+  "createdAt": "2026-06-05T12:00:00Z",
+  "updatedAt": "2026-06-05T12:00:00Z"
+}

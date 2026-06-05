@@ -1,0 +1,41 @@
+---
+description: CinemaStudio master development rules — MVP, performance, stability, phase gates
+alwaysApply: true
+---
+
+# CinemaStudio — Critical Rules
+
+## Absolute priorities (in order)
+1. Stability over features
+2. Video Engine is the core (not AI, not UI)
+3. Project State is the single source of truth
+4. Mobile performance: GPU, RAM, battery, thermal
+5. Local-first — cloud/API optional, never critical for core
+6. Simplicity external, complexity internal
+
+## Phase discipline
+- Follow `docs/PHASE_GATES.md` — do NOT skip phases
+- After completing a phase: STOP, document, present results, wait for `CONTINUE PHASE`
+- Check `docs/OUT_OF_SCOPE_MVP.md` before adding any feature
+- No new dependencies without documenting in `docs/DEPENDENCIES.md`
+
+## Architecture rules
+- All state mutations go through `ProjectStateManager` only
+- Modules communicate via Event Bus (`docs/EVENT_BUS.md`), not direct cross-calls
+- UI (Swift/Kotlin) never touches SQLite or engine internals directly
+- Schema changes require `schemaVersion` bump + migration
+
+## Code rules
+- Rust for engine core; thin native shells for iOS/Android
+- Every module: error handling + basic tests before phase completion
+- Heavy work: background queues, never block UI
+- No improvisation: stay aligned with `docs/ARCHITECTURE.md`
+
+## UX rules
+- Cinematic, premium, minimal — NOT social editor, NOT engineering UI
+- Main workflow ≤ 3 levels deep in MVP
+- AI = orchestrator/guidance, NOT free-form chatbot
+
+## When unsure
+Ask: "Does this improve stability, cinematic experience, or project state integrity?"
+If no → defer or simplify.
