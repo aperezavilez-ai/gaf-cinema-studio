@@ -1,0 +1,25 @@
+# Fastlane — TestFlight upload scaffold
+# Install: gem install fastlane
+# Configure App Store Connect API key in environment
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    xcodegen = sh("which xcodegen", log: false).strip
+    sh("cd ../ios && xcodegen generate") if xcodegen != ""
+
+    build_app(
+      scheme: "CinemaStudio",
+      workspace: nil,
+      project: "../ios/CinemaStudio.xcodeproj",
+      export_method: "app-store",
+      output_directory: "../ios/build/fastlane"
+    )
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true
+    )
+  end
+end

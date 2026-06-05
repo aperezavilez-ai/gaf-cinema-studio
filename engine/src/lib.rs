@@ -12,6 +12,7 @@ pub mod media_decoder;
 pub mod native_bridge;
 pub mod playback_engine;
 pub mod render_pipeline;
+pub mod release_readiness;
 pub mod project_state;
 pub mod render_scheduler;
 pub mod storage;
@@ -44,6 +45,7 @@ pub use render_pipeline::{
     ffmpeg_available, locate_ffmpeg, resolve_export_segments, ExportSegment, RenderBackend,
     RenderJob, RenderPipeline, RenderProgress, RenderResult, StubRenderBackend, FfmpegRenderBackend,
 };
+pub use release_readiness::{evaluate as evaluate_mvp_readiness, MvpReadinessReport};
 pub use project_state::{
     default_project_settings, validate_project_state, Mutation, ProjectSettings, ProjectState,
     ProjectStateManager, UndoRedoStack, ValidationReport,

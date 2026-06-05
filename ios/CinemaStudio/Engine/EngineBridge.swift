@@ -79,3 +79,9 @@ struct AiSuggestionItem: Identifiable {
     let actionLabel: String
     let isActionable: Bool
 }
+
+struct BetaStatus {
+    let completions: Int
+    let target: Int
+    let readyToShip: Bool
+}

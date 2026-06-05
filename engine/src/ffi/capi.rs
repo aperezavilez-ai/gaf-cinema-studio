@@ -280,6 +280,18 @@ pub extern "C" fn cs_c_ffmpeg_available() -> i32 {
     i32::from(crate::render_pipeline::ffmpeg_available())
 }
 
+#[no_mangle]
+pub extern "C" fn cs_c_mvp_readiness() -> *mut c_char {
+    let result = with_manager(|m| {
+        let report = m.mvp_readiness_report()?;
+        serde_json::to_string(&report).map_err(|e| e.to_string())
+    });
+    match result {
+        Ok(json) => to_c_string(json),
+        Err(e) => to_c_string(format!("ERROR:{e}")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

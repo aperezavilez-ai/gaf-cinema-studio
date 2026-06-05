@@ -36,7 +36,13 @@ class MainActivity : ComponentActivity() {
                             EditorScreen(onBack = { nav.popBackStack() })
                         }
                         composable("settings") {
-                            SettingsScreen(onBack = { nav.popBackStack() })
+                            SettingsScreen(
+                                onBack = { nav.popBackStack() },
+                                onOpenBeta = { nav.navigate("beta") }
+                            )
+                        }
+                        composable("beta") {
+                            BetaProgramScreen(onBack = { nav.popBackStack() })
                         }
                     }
                 }

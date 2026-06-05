@@ -11,8 +11,20 @@ android {
         applicationId = "com.cinemastudio"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 12
+        versionName = "1.0.0"
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystore = System.getenv("CINEMASTUDIO_KEYSTORE")
+            if (keystore != null) {
+                storeFile = file(keystore)
+                storePassword = System.getenv("CINEMASTUDIO_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("CINEMASTUDIO_KEY_ALIAS")
+                keyPassword = System.getenv("CINEMASTUDIO_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -22,6 +34,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

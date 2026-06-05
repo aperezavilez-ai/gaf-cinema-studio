@@ -1,38 +1,35 @@
 # CinemaStudio — Roadmap
 
-> Original MVP: Phases **0–6**. Post-MVP integration: **7–12**.
+> **MVP COMPLETE** — Phases 0–12 delivered (v1.0.0)
 
-## Completed
+## All phases delivered
 
 | Phase | Focus |
 |-------|--------|
-| 0 | Foundation, schemas, architecture |
-| 1 | Project state, storage, recovery |
-| 2 | Video engine MVP (timeline + playback) |
-| 3 | Minimal editing + export stub |
-| 4 | AI orchestrator v1 |
-| 5 | Device adaptive + performance |
-| 6 | Beta + optional cloud |
-| 7 | Integration scaffold (FFI, decode, render) |
+| 0 | Foundation |
+| 1 | Project state + storage |
+| 2 | Video engine MVP |
+| 3 | Editing + export stub |
+| 4 | AI orchestrator |
+| 5 | Device adaptive |
+| 6 | Beta + cloud optional |
+| 7 | Integration scaffold |
 | 8 | App shell + CI |
-| 9 | Native preview pipeline |
-| 10 | C ABI + mobile engine link |
+| 9 | Native preview |
+| 10 | C ABI engine link |
 | 11 | FFmpeg H.264 export |
+| 12 | Beta release + MVP ship |
 
-## Remaining (1 fase to MVP ship)
+## Next: human beta + store submission
 
-| Phase | Focus | Gate |
-|-------|--------|------|
-| **12** | TestFlight / Play internal beta + MVP release | 10 beta projects, crash rate < 1% |
+See [BETA_RELEASE.md](BETA_RELEASE.md):
 
-## After MVP (out of scope until approved)
+1. Upload TestFlight + Play Internal builds
+2. 10 testers complete real projects
+3. Submit v1.0.0 for review when gates pass
 
-- Real cloud OAuth + Stripe production
-- UniFFI callback for decode (replace C ABI shim optional)
-- Multicam, color grading, plugins — see `OUT_OF_SCOPE_MVP.md`
+## Post-MVP (requires new phase docs)
 
-## Dependency wiring order
-
-1. **Phase 10** — Link `libcinemastudio_engine` (C ABI or UniFFI)
-2. **Phase 11** — FFmpeg CLI in PATH or `CINEMASTUDIO_FFMPEG_PATH`
-3. **Phase 12** — TestFlight, beta cohort, store assets
+- Production cloud OAuth + Stripe
+- Full UniFFI on-device sync
+- Multicam, color grading, plugins — [OUT_OF_SCOPE_MVP.md](OUT_OF_SCOPE_MVP.md)

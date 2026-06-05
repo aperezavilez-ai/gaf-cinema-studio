@@ -22,6 +22,10 @@ final class ProjectStore: ObservableObject {
     @Published var isExporting = false
     @Published var exportProgress: Double = 0
 
+    @Published var betaCompletions: Int = 0
+    private let betaTarget = 10
+    private let betaKey = "cinemastudio.betaCompletions"
+
     @Published var showProjectPicker = false
 
     let previewVM = PreviewViewModel()
@@ -32,6 +36,7 @@ final class ProjectStore: ObservableObject {
 
     init() {
         loadRecent()
+        betaCompletions = UserDefaults.standard.integer(forKey: betaKey)
         EngineBridge.shared.initialize()
         VideoDecoderService.shared.registerWithEngine()
     }
@@ -188,6 +193,24 @@ final class ProjectStore: ObservableObject {
 
     func dismissSuggestion(id: UUID) {
         try? EngineBridge.shared.dismissSuggestion(id: id)
+    }
+
+    func betaStatus() -> BetaStatus {
+        BetaStatus(
+            completions: betaCompletions,
+            target: betaTarget,
+            readyToShip: betaCompletions >= betaTarget
+        )
+    }
+
+    func shipProject(userLabel: String) {
+        guard currentProject != nil else { return }
+        if !UserDefaults.standard.bool(forKey: "beta_\(currentProject!.id.uuidString)") {
+            betaCompletions += 1
+            UserDefaults.standard.set(betaCompletions, forKey: betaKey)
+            UserDefaults.standard.set(true, forKey: "beta_\(currentProject!.id.uuidString)")
+        }
+        exportStatus = "Project shipped — thank you, \(userLabel)!"
     }
 
     // MARK: - Private

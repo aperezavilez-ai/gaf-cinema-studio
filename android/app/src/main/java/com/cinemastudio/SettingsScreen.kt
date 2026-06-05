@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onOpenBeta: () -> Unit) {
     var telemetry by remember { mutableStateOf(false) }
     var crashReports by remember { mutableStateOf(false) }
 
@@ -53,6 +53,10 @@ fun SettingsScreen(onBack: () -> Unit) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("Crash reports", color = Color.White)
                 Switch(checked = crashReports, onCheckedChange = { crashReports = it })
+            }
+
+            Button(onClick = onOpenBeta, modifier = Modifier.fillMaxWidth()) {
+                Text("Beta Program")
             }
         }
     }

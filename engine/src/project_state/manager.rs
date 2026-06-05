@@ -248,6 +248,31 @@ impl ProjectStateManager {
         Ok(reg)
     }
 
+    pub const MVP_VERSION: &'static str = "1.0.0";
+
+    /// Aggregated MVP ship readiness (gates 6.3, 6.4, 12).
+    pub fn mvp_readiness_report(&self) -> Result<crate::release_readiness::MvpReadinessReport> {
+        let beta = self.beta.load()?;
+        let rate = self.telemetry.crash_rate()?;
+        Ok(crate::release_readiness::evaluate(
+            &beta,
+            rate,
+            Self::MVP_VERSION,
+        ))
+    }
+
+    /// Mark current project shipped — beta completion + workflow Complete.
+    pub fn ship_project(&mut self, user_label: &str) -> Result<crate::release_readiness::MvpReadinessReport> {
+        use crate::project_state::types::WorkflowPhase;
+
+        self.apply(Mutation::SetWorkflowPhase {
+            phase: WorkflowPhase::Complete,
+        })?;
+        self.save()?;
+        self.beta_mark_complete(user_label)?;
+        self.mvp_readiness_report()
+    }
+
     pub fn device_profile(&self) -> &DeviceProfile {
         self.device.profile()
     }

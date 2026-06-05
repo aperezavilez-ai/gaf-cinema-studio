@@ -1,0 +1,12 @@
+{
+  "name": "CinemaStudio",
+  "subtitle": "Mobile cinematic studio",
+  "promotionalText": "Edit films on your phone. Local-first. Pro workflow.",
+  "description": "CinemaStudio is a premium mobile cinematic editing studio — not a social editor. Create projects locally, import media, edit on a timeline, and export H.264 — all on device.\n\n• Local-first — your projects stay on your device\n• Cinematic UI — minimal, guided workflow\n• AI orchestrator — suggestions, not chat\n• Optional cloud backup and Pro subscription",
+  "keywords": ["video editor", "cinematic", "film", "timeline", "export", "mobile"],
+  "primaryCategory": "PHOTO_AND_VIDEO",
+  "privacyPolicyUrl": "https://YOUR_DOMAIN/privacy",
+  "supportUrl": "https://YOUR_DOMAIN/support",
+  "marketingUrl": "https://YOUR_DOMAIN",
+  "version": "1.0.0"
+}

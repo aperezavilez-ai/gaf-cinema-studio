@@ -27,6 +27,15 @@ struct SettingsView: View {
                     billingSection
                     privacySection
 
+                    NavigationLink(destination: BetaProgramView()) {
+                        Label("Beta Program", systemImage: "flag.checkered")
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .foregroundStyle(.white)
+                            .padding(12)
+                            .background(Color.white.opacity(0.06))
+                            .cornerRadius(6)
+                    }
+
                     if !statusMessage.isEmpty {
                         Text(statusMessage)
                             .font(.caption)

@@ -1,0 +1,21 @@
+CinemaStudio — Mobile cinematic studio
+
+Short description (80 chars):
+Edit films on your phone. Local-first cinematic workflow.
+
+Full description:
+CinemaStudio is a premium mobile cinematic editing studio. Create .csproj projects locally, import video, edit on a timeline, and export H.264 — without needing a social network or cloud account.
+
+Features:
+• Local-first project storage
+• Timeline editing with undo/redo
+• AVFoundation preview (iOS) / native decode (Android)
+• FFmpeg H.264 export
+• AI cinematic guidance (offline)
+• Optional cloud backup & Pro tier
+
+Category: Video Players & Editors
+Content rating: Everyone
+Version: 1.0.0
+
+Privacy policy: https://YOUR_DOMAIN/privacy

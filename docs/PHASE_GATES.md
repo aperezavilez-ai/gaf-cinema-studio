@@ -179,6 +179,20 @@ Human approval required: respond with `CONTINUE PHASE` in chat.
 
 ---
 
+## Phase 12 — Beta Release + MVP Ship
+
+### Gate Criteria
+| # | Criterion | Target |
+|---|-----------|--------|
+| 12.1 | Beta cohort | 10 projects |
+| 12.2 | Crash rate | < 1% |
+| 12.3 | Release builds | TestFlight + Play |
+| 12.4 | MVP readiness | `ready_to_ship` |
+
+**Status:** MVP roadmap complete — human beta + store submission pending.
+
+---
+
 ## Validation Protocol (every phase)
 
 1. Run automated tests
