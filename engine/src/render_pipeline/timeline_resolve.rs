@@ -16,6 +16,12 @@ pub struct ExportSegment {
     pub timeline_start_ms: u64,
     pub source_in_ms: u64,
     pub duration_ms: u64,
+    pub fade_in_ms: u64,
+    pub fade_out_ms: u64,
+    pub lens_preset: String,
+    pub brightness: f32,
+    pub contrast: f32,
+    pub saturation: f32,
 }
 
 /// Video track clips sorted by timeline position.
@@ -57,6 +63,12 @@ pub fn resolve_export_segments(state: &ProjectState) -> Result<Vec<ExportSegment
             timeline_start_ms: clip.start_ms,
             source_in_ms: clip.source_in_ms,
             duration_ms: clip.duration_ms,
+            fade_in_ms: clip.transitions.fade_in_ms,
+            fade_out_ms: clip.transitions.fade_out_ms,
+            lens_preset: clip.look.lens_preset.clone(),
+            brightness: clip.look.brightness,
+            contrast: clip.look.contrast,
+            saturation: clip.look.saturation,
         });
     }
 

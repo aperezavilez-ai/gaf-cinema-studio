@@ -1,6 +1,5 @@
-package com.cinemastudio.ui.ui
+package com.cinemastudio.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -9,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.cinemastudio.infrastructure.InfrastructureStatus
 import com.cinemastudio.infrastructure.fetchInfrastructureStatus
 import kotlinx.coroutines.launch
 
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(onBack: () -> Unit, onOpenBeta: () -> Unit) {
     var telemetry by remember { mutableStateOf(false) }
     var crashReports by remember { mutableStateOf(false) }
-    var infra by remember { mutableStateOf(com.cinemastudio.infrastructure.InfrastructureStatus()) }
+    var infra by remember { mutableStateOf(InfrastructureStatus()) }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {

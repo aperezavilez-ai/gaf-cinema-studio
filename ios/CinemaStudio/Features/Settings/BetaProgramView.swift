@@ -20,7 +20,7 @@ struct BetaProgramView: View {
                         .tracking(3)
                         .foregroundStyle(.white.opacity(0.4))
 
-                    Text("CinemaStudio MVP 1.0.0")
+                    Text("GAF Cinema Studio MVP 1.0.0")
                         .font(.title3)
                         .foregroundStyle(.white)
 

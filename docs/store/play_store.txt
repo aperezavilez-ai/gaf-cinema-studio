@@ -1,10 +1,10 @@
-CinemaStudio — Mobile cinematic studio
+GAF Cinema Studio — Mobile cinematic studio
 
 Short description (80 chars):
 Edit films on your phone. Local-first cinematic workflow.
 
 Full description:
-CinemaStudio is a premium mobile cinematic editing studio. Create .csproj projects locally, import video, edit on a timeline, and export H.264 — without needing a social network or cloud account.
+GAF Cinema Studio is a premium mobile cinematic editing studio. Create .csproj projects locally, import video, edit on a timeline, and export H.264 — without needing a social network or cloud account.
 
 Features:
 • Local-first project storage

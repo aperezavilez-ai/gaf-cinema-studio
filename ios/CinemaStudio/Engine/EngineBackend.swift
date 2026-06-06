@@ -155,11 +155,16 @@ struct NativeEngineBackend: EngineBackend {
         guard cs_c_playback_pause() == 0 else { throw EngineError.native("playback pause failed") }
     }
 
-    func splitAtPlayhead() throws -> Bool { false }
-    func deleteAtPlayhead() throws -> Bool { false }
+    func splitAtPlayhead() throws -> Bool { cs_c_split_at_playhead() == 1 }
+    func deleteAtPlayhead() throws -> Bool { cs_c_delete_at_playhead() == 1 }
     func undo() throws -> Bool { cs_c_undo() == 1 }
     func redo() throws -> Bool { cs_c_redo() == 1 }
-    func startExport(width: Int, height: Int) throws -> UUID { UUID() }
+    func startExport(width: Int, height: Int) throws -> UUID {
+        let idStr = try CinemaStudioFFI.requireString(
+            cs_c_start_export(UInt32(width), UInt32(height), 24.0)
+        )
+        return UUID(uuidString: idStr) ?? UUID()
+    }
 
     func aiSuggestions() throws -> [AiSuggestionItem] {
         let json = try CinemaStudioFFI.requireString(cs_c_ai_suggestions())

@@ -20,7 +20,7 @@ function supabaseState() {
 
 function buildDeploymentStatus() {
   return {
-    service: "cinemastudio-web",
+    service: "gaf-cinema-studio",
     version: MVP_VERSION,
     mvp: { phases: "0-12", status: "complete" },
     domains: {

@@ -114,7 +114,7 @@ struct SettingsView: View {
 
     private var billingSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionHeader("CinemaStudio Pro", subtitle: "Stripe subscription — optional")
+            sectionHeader("GAF Cinema Studio Pro", subtitle: "Stripe subscription — optional")
 
             HStack {
                 Text(isPro ? "Pro active" : "Free tier")

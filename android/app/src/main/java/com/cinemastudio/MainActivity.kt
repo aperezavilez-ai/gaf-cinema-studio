@@ -11,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cinemastudio.engine.EngineBridge
+import com.cinemastudio.ui.BetaProgramScreen
 import com.cinemastudio.ui.EditorScreen
 import com.cinemastudio.ui.HomeScreen
 import com.cinemastudio.ui.SettingsScreen

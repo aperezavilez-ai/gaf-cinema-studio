@@ -131,6 +131,31 @@ pub fn render_with_ffmpeg(
     })
 }
 
+fn build_look_filters(seg: &ExportSegment) -> Vec<String> {
+    let mut parts = Vec::new();
+    match seg.lens_preset.as_str() {
+        "anamorphic" => {
+            parts.push("vignette=angle=PI/4:mode=forward".to_string());
+            parts.push("scale=1920:816:force_original_aspect_ratio=decrease,pad=1920:816:(ow-iw)/2:(oh-ih)/2".to_string());
+        }
+        "vintage" => {
+            parts.push("vignette=angle=PI/5".to_string());
+            parts.push("eq=saturation=0.85:contrast=1.05".to_string());
+        }
+        "wide" => {
+            parts.push("scale=iw*1.08:ih*1.08,crop=iw/1.08:ih/1.08".to_string());
+        }
+        _ => {}
+    }
+    let b = seg.brightness.clamp(-1.0, 1.0);
+    let c = seg.contrast.clamp(0.0, 2.0);
+    let s = seg.saturation.clamp(0.0, 2.0);
+    if (b.abs() > 0.01) || ((c - 1.0).abs() > 0.01) || ((s - 1.0).abs() > 0.01) {
+        parts.push(format!("eq=brightness={b:.2}:contrast={c:.2}:saturation={s:.2}"));
+    }
+    parts
+}
+
 fn extract_segments(
     ffmpeg: &Path,
     segments: &[ExportSegment],
@@ -142,27 +167,47 @@ fn extract_segments(
         let out = temp_dir.join(format!("seg_{i:03}.mp4"));
         let start_sec = format!("{:.3}", seg.source_in_ms as f64 / 1000.0);
         let dur_sec = format!("{:.3}", seg.duration_ms as f64 / 1000.0);
+        let dur_f = seg.duration_ms as f64 / 1000.0;
+
+        let mut vf_parts: Vec<String> = build_look_filters(seg);
+        if seg.fade_in_ms > 0 {
+            let d = seg.fade_in_ms as f64 / 1000.0;
+            vf_parts.push(format!("fade=t=in:st=0:d={d:.3}"));
+        }
+        if seg.fade_out_ms > 0 {
+            let d = seg.fade_out_ms as f64 / 1000.0;
+            let st = (dur_f - d).max(0.0);
+            vf_parts.push(format!("fade=t=out:st={st:.3}:d={d:.3}"));
+        }
+
+        let mut args = vec![
+            "-y".to_string(),
+            "-ss".to_string(),
+            start_sec,
+            "-i".to_string(),
+            seg.source_path.to_string_lossy().into_owned(),
+            "-t".to_string(),
+            dur_sec,
+        ];
+        if !vf_parts.is_empty() {
+            args.push("-vf".to_string());
+            args.push(vf_parts.join(","));
+        }
+        args.extend([
+            "-c:v".to_string(),
+            "libx264".to_string(),
+            "-preset".to_string(),
+            "medium".to_string(),
+            "-crf".to_string(),
+            "23".to_string(),
+            "-pix_fmt".to_string(),
+            "yuv420p".to_string(),
+            "-an".to_string(),
+            out.to_string_lossy().into_owned(),
+        ]);
 
         let status = Command::new(ffmpeg)
-            .args([
-                "-y",
-                "-ss",
-                &start_sec,
-                "-i",
-                &seg.source_path.to_string_lossy(),
-                "-t",
-                &dur_sec,
-                "-c:v",
-                "libx264",
-                "-preset",
-                "medium",
-                "-crf",
-                "23",
-                "-pix_fmt",
-                "yuv420p",
-                "-an",
-                &out.to_string_lossy(),
-            ])
+            .args(&args)
             .stdout(Stdio::null())
             .stderr(Stdio::null())
             .status()

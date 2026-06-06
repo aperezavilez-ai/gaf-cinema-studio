@@ -11,17 +11,8 @@ struct HomeView: View {
             Color.black.ignoresSafeArea()
 
             VStack(spacing: 32) {
-                VStack(spacing: 8) {
-                    Text("CINEMASTUDIO")
-                        .font(.system(size: 28, weight: .light, design: .default))
-                        .tracking(6)
-                        .foregroundStyle(.white)
-
-                    Text("Mobile cinematic studio")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.5))
-                }
-                .padding(.top, 48)
+                GafBrandLockup()
+                    .padding(.top, 48)
 
                 if let project = store.currentProject {
                     NavigationLink(destination: EditorView()) {
@@ -139,6 +130,38 @@ struct RecentProjectsList: View {
                     .padding(.vertical, 12)
                 }
             }
+        }
+    }
+}
+
+struct GafBrandLockup: View {
+    private let gold = Color(red: 0.79, green: 0.64, blue: 0.15)
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Text("GAF")
+                .font(.system(size: 40, weight: .bold, design: .default))
+                .tracking(10)
+                .foregroundStyle(gold)
+
+            Rectangle()
+                .fill(gold.opacity(0.55))
+                .frame(width: 56, height: 1)
+
+            VStack(spacing: 2) {
+                Text("CINEMA")
+                    .font(.system(size: 20, weight: .light, design: .default))
+                    .tracking(6)
+                    .foregroundStyle(.white)
+                Text("STUDIO")
+                    .font(.system(size: 20, weight: .light, design: .default))
+                    .tracking(6)
+                    .foregroundStyle(.white)
+            }
+
+            Text("Mobile cinematic studio")
+                .font(.footnote)
+                .foregroundStyle(.white.opacity(0.45))
         }
     }
 }

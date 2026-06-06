@@ -114,6 +114,32 @@ pub enum TrackType {
     Audio,
 }
 
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ClipLook {
+    /// none | anamorphic | vintage | wide
+    #[serde(default)]
+    pub lens_preset: String,
+    /// Multicam angle 1–3
+    #[serde(default = "default_camera_angle")]
+    pub camera_angle: u8,
+    /// -1.0 .. 1.0
+    #[serde(default)]
+    pub brightness: f32,
+    #[serde(default = "default_one_f32")]
+    pub contrast: f32,
+    #[serde(default = "default_one_f32")]
+    pub saturation: f32,
+}
+
+fn default_camera_angle() -> u8 {
+    1
+}
+
+fn default_one_f32() -> f32 {
+    1.0
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Clip {
@@ -127,6 +153,8 @@ pub struct Clip {
     pub label: String,
     #[serde(default)]
     pub transitions: ClipTransitions,
+    #[serde(default)]
+    pub look: ClipLook,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]

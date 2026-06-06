@@ -1,7 +1,7 @@
 use uuid::Uuid;
 
 use crate::error::{CinemaError, Result};
-use crate::project_state::types::{Clip, ClipTransitions, MediaAsset, ProjectState, Timeline, TrackType};
+use crate::project_state::types::{Clip, ClipLook, ClipTransitions, MediaAsset, ProjectState, Timeline, TrackType};
 
 #[derive(Debug, Clone)]
 pub struct AddClipParams {
@@ -42,6 +42,7 @@ pub fn add_clip(state: &ProjectState, params: AddClipParams) -> Result<Timeline>
         source_out_ms: duration_ms,
         label: media.file_name.clone(),
         transitions: ClipTransitions::default(),
+        look: ClipLook::default(),
     };
 
     timeline.tracks[track_idx].clips.push(clip);
@@ -147,6 +148,24 @@ pub fn split_clip(state: &ProjectState, clip_id: Uuid, at_timeline_ms: u64) -> R
     timeline.tracks[track_idx].clips.insert(clip_idx + 1, right);
 
     Ok(finish_timeline(timeline))
+}
+
+/// Duplicate clip immediately after itself (repeat shot).
+pub fn duplicate_clip(state: &ProjectState, clip_id: Uuid) -> Result<(Timeline, Uuid)> {
+    let mut timeline = state.timeline.clone();
+    let (track_idx, clip_idx) = find_clip_location(&timeline, clip_id)?;
+    let original = timeline.tracks[track_idx].clips[clip_idx].clone();
+
+    let mut dup = original.clone();
+    dup.id = Uuid::new_v4();
+    dup.start_ms = original.start_ms + original.duration_ms;
+    if !original.label.is_empty() {
+        dup.label = format!("{} (copy)", original.label);
+    }
+
+    timeline.tracks[track_idx].clips.insert(clip_idx + 1, dup);
+    let new_id = timeline.tracks[track_idx].clips[clip_idx + 1].id;
+    Ok((finish_timeline(timeline), new_id))
 }
 
 /// Timeline duration = end of the last clip on any track.

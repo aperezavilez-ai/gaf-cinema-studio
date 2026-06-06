@@ -51,6 +51,7 @@ pub struct ProjectStateManager {
     billing: BillingStore,
     telemetry: TelemetryService,
     beta: BetaTracker,
+    preferred_camera_angle: u8,
 }
 
 #[derive(Debug, Clone)]
@@ -103,6 +104,7 @@ impl ProjectStateManager {
             telemetry: TelemetryService::new(&data_root),
             beta: BetaTracker::new(&data_root),
             data_root,
+            preferred_camera_angle: 1,
         }
     }
 
@@ -564,11 +566,13 @@ impl ProjectStateManager {
     pub fn scrub_to(&mut self, time_ms: u64) -> Result<FrameComposition> {
         let state = self.state.as_ref().unwrap().clone();
         let project_id = state.project_id;
-        let frame = self
+        let mut frame = self
             .video_engine
             .as_mut()
             .ok_or_else(|| CinemaError::Validation("video engine not initialized".into()))?
             .scrub(&state, time_ms);
+
+        self.prefer_camera_angle(&state, &mut frame);
 
         self.state.as_mut().unwrap().timeline.playhead_ms = self
             .video_engine
@@ -839,6 +843,117 @@ impl ProjectStateManager {
             clip_id: hit.clip_id,
         });
         Ok(true)
+    }
+
+    pub fn duplicate_at_playhead(&mut self) -> Result<bool> {
+        let state = self.state.as_ref().unwrap();
+        let playhead = state.timeline.playhead_ms;
+        let hit = match clip_at_playhead(state, playhead) {
+            Some(h) => h,
+            None => return Ok(false),
+        };
+        self.record_history();
+        let state = self.state.as_ref().unwrap();
+        let (timeline, _new_id) = VideoEngine::duplicate_clip(state, hit.clip_id)?;
+        self.apply_timeline(timeline);
+        Ok(true)
+    }
+
+    pub fn set_clip_look(
+        &mut self,
+        clip_id: Uuid,
+        lens_preset: String,
+        camera_angle: u8,
+        brightness: f32,
+        contrast: f32,
+        saturation: f32,
+    ) -> Result<()> {
+        self.record_history();
+        let state = self.state.as_mut().unwrap();
+        for track in &mut state.timeline.tracks {
+            if let Some(clip) = track.clips.iter_mut().find(|c| c.id == clip_id) {
+                clip.look.lens_preset = lens_preset;
+                clip.look.camera_angle = camera_angle.clamp(1, 3);
+                clip.look.brightness = brightness.clamp(-1.0, 1.0);
+                clip.look.contrast = contrast.clamp(0.0, 2.0);
+                clip.look.saturation = saturation.clamp(0.0, 2.0);
+                if let Some(ve) = &mut self.video_engine {
+                    ve.sync_from_state(self.state.as_ref().unwrap());
+                }
+                self.save()?;
+                return Ok(());
+            }
+        }
+        Err(CinemaError::Validation("clip not found".into()))
+    }
+
+    pub fn switch_camera_angle(&mut self, angle: u8) -> Result<bool> {
+        self.preferred_camera_angle = angle.clamp(1, 3);
+        let state = self.state.as_ref().unwrap();
+        let playhead = state.timeline.playhead_ms;
+        let anchor = clip_at_playhead(state, playhead).map(|h| h.clip_id);
+        let anchor_start = anchor.and_then(|id| {
+            state
+                .timeline
+                .tracks
+                .iter()
+                .flat_map(|t| t.clips.iter())
+                .find(|c| c.id == id)
+                .map(|c| c.start_ms)
+        });
+
+        let target = state
+            .timeline
+            .tracks
+            .iter()
+            .flat_map(|t| t.clips.iter())
+            .filter(|c| c.look.camera_angle == self.preferred_camera_angle)
+            .find(|c| {
+                anchor_start
+                    .map(|s| c.start_ms == s)
+                    .unwrap_or_else(|| playhead >= c.start_ms && playhead < c.start_ms + c.duration_ms)
+            })
+            .or_else(|| {
+                state
+                    .timeline
+                    .tracks
+                    .iter()
+                    .flat_map(|t| t.clips.iter())
+                    .filter(|c| c.look.camera_angle == self.preferred_camera_angle)
+                    .filter(|c| c.start_ms >= playhead)
+                    .min_by_key(|c| c.start_ms)
+            });
+
+        if let Some(clip) = target {
+            let offset = if playhead >= clip.start_ms && playhead < clip.start_ms + clip.duration_ms {
+                playhead - clip.start_ms
+            } else {
+                0
+            };
+            self.state.as_mut().unwrap().timeline.playhead_ms = clip.start_ms + offset;
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn prefer_camera_angle(&self, state: &ProjectState, frame: &mut FrameComposition) {
+        if frame.video_layers.len() <= 1 {
+            return;
+        }
+        if let Some(idx) = frame.video_layers.iter().position(|layer| {
+            state
+                .timeline
+                .tracks
+                .iter()
+                .flat_map(|t| t.clips.iter())
+                .find(|c| c.id == layer.clip_id)
+                .map(|c| c.look.camera_angle == self.preferred_camera_angle)
+                .unwrap_or(false)
+        }) {
+            let layer = frame.video_layers.remove(idx);
+            frame.video_layers.insert(0, layer);
+        }
     }
 
     /// Queue 1080p MP4 export — fully async, never blocks caller (Gate 3.2).

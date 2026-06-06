@@ -62,6 +62,24 @@ func cs_c_playback_pause() -> Int32
 @_silgen_name("cs_c_playback_tick")
 func cs_c_playback_tick() -> UnsafeMutablePointer<CChar>?
 
+@_silgen_name("cs_c_split_at_playhead")
+func cs_c_split_at_playhead() -> Int32
+
+@_silgen_name("cs_c_delete_at_playhead")
+func cs_c_delete_at_playhead() -> Int32
+
+@_silgen_name("cs_c_timeline_info")
+func cs_c_timeline_info() -> UnsafeMutablePointer<CChar>?
+
+@_silgen_name("cs_c_add_clip")
+func cs_c_add_clip(_ mediaId: UnsafePointer<CChar>, _ startMs: Int64) -> UnsafeMutablePointer<CChar>?
+
+@_silgen_name("cs_c_start_export")
+func cs_c_start_export(_ width: UInt32, _ height: UInt32, _ frameRate: Double) -> UnsafeMutablePointer<CChar>?
+
+@_silgen_name("cs_c_export_status")
+func cs_c_export_status() -> UnsafeMutablePointer<CChar>?
+
 @_silgen_name("cs_c_undo")
 func cs_c_undo() -> Int32
 

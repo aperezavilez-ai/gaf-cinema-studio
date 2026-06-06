@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "CinemaStudio"
+rootProject.name = "GAF Cinema Studio"
 include(":app")

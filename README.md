@@ -1,6 +1,6 @@
-# CinemaStudio
+# GAF Cinema Studio
 
-Mobile-first cinematic editing studio. Local-first architecture with a native video engine core.
+Mobile-first cinematic editing studio by **GAF**. Local-first architecture with a native video engine core.
 
 ## Principles
 
@@ -50,6 +50,8 @@ Mobile-first cinematic editing studio. Local-first architecture with a native vi
 | Supabase | Pending — see [DEPLOYMENT.md](docs/DEPLOYMENT.md) |
 
 Verify: `.\scripts\verify_connections.ps1` · [gafcinemastudio.com](https://gafcinemastudio.com)
+
+**Probar en teléfono:** [docs/INSTALAR_EN_TELEFONO.md](docs/INSTALAR_EN_TELEFONO.md)
 
 See [docs/PHASE_GATES.md](docs/PHASE_GATES.md) for gate criteria.
 

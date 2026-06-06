@@ -8,7 +8,8 @@ use crate::event_bus::{CinemaEvent, EventBus};
 use crate::playback_engine::{PlaybackEngine, PlaybackMode, PlaybackStatus};
 use crate::project_state::types::ProjectState;
 use crate::timeline_engine::{
-    add_clip, move_clip, remove_clip, split_clip, trim_clip, AddClipParams, FrameComposition,
+    add_clip, duplicate_clip, move_clip, remove_clip, split_clip, trim_clip, AddClipParams,
+    FrameComposition,
 };
 
 pub struct VideoEngine {
@@ -69,6 +70,10 @@ impl VideoEngine {
 
     pub fn split_clip(state: &ProjectState, clip_id: Uuid, at_ms: u64) -> Result<crate::project_state::types::Timeline> {
         split_clip(state, clip_id, at_ms)
+    }
+
+    pub fn duplicate_clip(state: &ProjectState, clip_id: Uuid) -> Result<(crate::project_state::types::Timeline, Uuid)> {
+        duplicate_clip(state, clip_id)
     }
 
     // ── Playback ops ──

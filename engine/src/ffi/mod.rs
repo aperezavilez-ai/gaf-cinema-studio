@@ -117,6 +117,7 @@ pub fn cs_scrub_to(time_ms: u64) -> Result<String, String> {
                 .primary_video()
                 .map(|l| l.playback_path.display().to_string()),
             uses_proxy: frame.primary_video().map(|l| l.uses_proxy).unwrap_or(false),
+            source_time_ms: frame.primary_video().map(|l| l.source_time_ms),
         };
         to_json(&dto)
     })

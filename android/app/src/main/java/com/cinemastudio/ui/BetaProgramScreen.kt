@@ -34,7 +34,7 @@ fun BetaProgramScreen(onBack: () -> Unit) {
             Modifier.fillMaxSize().padding(padding).padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("CinemaStudio MVP 1.0.0", color = Color.White, style = MaterialTheme.typography.titleMedium)
+            Text("GAF Cinema Studio MVP 1.0.0", color = Color.White, style = MaterialTheme.typography.titleMedium)
             Text("$completions / $target beta projects", color = Color.White.copy(0.7f))
             LinearProgressIndicator(
                 progress = { completions.toFloat() / target },
